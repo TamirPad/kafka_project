@@ -9,6 +9,7 @@ from typing import Tuple, Optional
 from kafka import KafkaProducer
 import json
 
+
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 
