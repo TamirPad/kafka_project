@@ -12,6 +12,13 @@ from kafka import KafkaProducer
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
+# Error handling for global exceptions
+@app.errorhandler(Exception)
+def handle_error(e):
+    logging.error('An error occurred: %s', e)
+    return jsonify({"error": "Internal Server Error"}), 500
+
+
 # Initialize database connection parameters from config
 db_config = {
     'host': Config.MYSQL_HOST,
