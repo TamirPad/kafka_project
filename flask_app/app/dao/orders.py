@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Union
-from MySQL import MySQL
+from app.utils.sql.MySQL import MySQL
 import logging
 
 class Order:

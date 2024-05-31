@@ -4,9 +4,9 @@ from typing import Tuple, Optional
 import json
 import uuid
 from flask import Flask, render_template, jsonify, request
-from orders import OrderDao, Order
-from MySQL import MySQL
-from config import Config
+from app.dao.orders import OrderDao, Order
+from app.utils.sql.MySQL import MySQL
+from app.config import Config
 from kafka import KafkaProducer
 
 app = Flask(__name__)
