@@ -4,27 +4,16 @@ from typing import Tuple, Optional
 import json
 import uuid
 from flask import Flask, render_template, Blueprint, jsonify, request
-from app.dao.orders import OrderDao, Order
+from app.dao.orders_dao import OrderDao, Order
 from app.utils.sql.MySQL import MySQL
 from app.config import Config
 from app.utils.kafka.kafkaClient import KafkaClient
-
-orders_bp = Blueprint('orders', __name__)
+from app.utils.sql.db import db
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# Initialize database connection parameters from config
-db_config = {
-    'host': Config.MYSQL_HOST,
-    'user': Config.MYSQL_USER,
-    'password': Config.MYSQL_PASSWORD,
-    'database': Config.MYSQL_DB,
-    'port': Config.MYSQL_PORT
-}
 
-# Initialize MySQL connection
-db = MySQL(**db_config)
-db.connect()
+orders_bp = Blueprint('orders', __name__)
 
 # Initialize Kafka 
 kafka_bootstrap_servers = Config.KAFKA_BOOTSTRAP_SERVERS
