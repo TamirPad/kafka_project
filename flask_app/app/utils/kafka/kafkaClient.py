@@ -1,13 +1,22 @@
 from confluent_kafka import Producer, Consumer, KafkaError
-from config import Config
+import json
 
 class KafkaClient:
     def __init__(self, bootstrap_servers):
-        self.bootstrap_servers = Config.KAFKA_BOOTSTRAP_SERVERS
+        self.bootstrap_servers = bootstrap_servers
 
 
     def produce_message(self, topic: str, message: str) -> None:
-        pass
+        producer = Producer({'bootstrap.servers': self.bootstrap_servers})
+
+        try:
+            producer.produce(topic, json.dumps(message).encode('utf-8'))
+            producer.flush()
+            print("Message sent successfully")
+        except Exception as e:
+            print(f"Failed to send message: {e}")
+    
+
 
     def consume_messages(self, topic: str) -> None:
 
@@ -39,11 +48,3 @@ class KafkaClient:
 
     def create_topic(self, topic_name: str, num_partitions: int = 1, replication_factor: int = 1) -> None:
         pass
-
-# Example usage:
-if __name__ == "__main__":
-    
-    kafka_client = KafkaClient('localhost:9092')
-    
-    # Consume messages from a topic
-    kafka_client.consume_messages('orders')
