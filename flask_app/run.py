@@ -1,5 +1,5 @@
 from flask import Flask
-from app.api.v1.orders import orders_bp
+from app.api.v1.orders_api import orders_bp
 from app.utils.sql.db import db
 
 def create_app():

@@ -4,7 +4,7 @@ from typing import Tuple, Optional
 import json
 import uuid
 from flask import Flask, render_template, Blueprint, jsonify, request
-from app.dao.orders import OrderDao, Order
+from app.dao.orders_dao import OrderDao, Order
 from app.utils.sql.MySQL import MySQL
 from app.config import Config
 from app.utils.kafka.kafkaClient import KafkaClient
