@@ -12,6 +12,15 @@ class Order:
         self.created_date = created_date
         self.updated_date = updated_date
 
+    def to_dict(self) -> Dict[str, Any]:
+            return {
+                "id": self.id,
+                "customer_id": self.customer_id,
+                "product_ids": self.product_ids,
+                "created_date": self.created_date.isoformat(),
+                "updated_date": self.updated_date.isoformat()
+            }
+
 class OrderDao:
     def __init__(self, db: MySQL) -> None:
         self.db = db

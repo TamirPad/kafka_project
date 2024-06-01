@@ -56,16 +56,10 @@ def index() -> str:
 def get_order(id: str) -> Tuple[Optional[dict], int]:
     if not id:
         return jsonify({"error": "Invalid order ID format"}), 400
+    
     order = order_dao.get_order(id)
-   
     if order:
-        return  {
-                "id": order.id,
-                "customer_id": order.customer_id,
-                "product_ids": order.product_ids,
-                "created_date": order.created_date.isoformat(),
-                "updated_date": order.updated_date.isoformat()
-                }, 200
+        return  jsonify(order.to_dict()), 200
 
     return jsonify({"message": "Order not found"}), 404
 
