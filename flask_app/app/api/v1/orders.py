@@ -7,7 +7,7 @@ from flask import Flask, render_template, Blueprint, jsonify, request
 from app.dao.orders import OrderDao, Order
 from app.utils.sql.MySQL import MySQL
 from app.config import Config
-from kafka import KafkaProducer
+from app.utils.kafka.kafkaClient import KafkaClient
 
 orders_bp = Blueprint('orders', __name__)
 
@@ -29,11 +29,7 @@ db.connect()
 # Initialize Kafka 
 kafka_bootstrap_servers = Config.KAFKA_BOOTSTRAP_SERVERS
 kafka_topic = Config.KAFKA_TOPIC
-
-kafka_producer = KafkaProducer(
-    bootstrap_servers=kafka_bootstrap_servers,
-    value_serializer=lambda x: json.dumps(x).encode('utf-8')
-)
+kafka_client = KafkaClient(kafka_bootstrap_servers)
 
 # Initialize OrderDao
 order_dao = OrderDao(db)
@@ -75,7 +71,7 @@ def create_order() -> Tuple[dict, int]:
     order_dao.create_order(order)
 
     order_info = {"message": "Order created", "order_id": order.id}
-    kafka_producer.send(kafka_topic, value=order_info)
+    kafka_client.produce_message(kafka_topic, order_info)
 
     return jsonify(order_info), 201
 
@@ -91,7 +87,7 @@ def update_order(id: str) -> Tuple[dict, int]:
     order_dao.update_order(order)
 
     order_info = {"message": "Order updated", "order_id": id}
-    kafka_producer.send(kafka_topic, value=order_info)
+    kafka_client.produce_message(kafka_topic, order_info)
 
     return jsonify(order_info), 200
 
@@ -104,7 +100,7 @@ def delete_order(id: str) -> Tuple[dict, int]:
     order_dao.delete_order(id)
     
     order_info = {"message": "Order deleted", "order_id": id}
-    kafka_producer.send(kafka_topic, value=order_info)
+    kafka_client.produce_message(kafka_topic, order_info)
     
     return jsonify(order_info), 200
 
