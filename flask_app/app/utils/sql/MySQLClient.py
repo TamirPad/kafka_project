@@ -41,7 +41,7 @@ class MySQLClient:
             if self.connection.is_connected():
                 logging.info("Connection to MySQL database successful")
         except Error as e:
-            logging.error(f"Error occurred: {e}")
+            logging.error(f"[MySQL.connect] Error occurred: {e}")
             self.connection = None
 
     def disconnect(self) -> None:
@@ -59,8 +59,8 @@ class MySQLClient:
         :return: Query result for SELECT queries, None otherwise
         """
         if self.connection is None or not self.connection.is_connected():
-            logging.error("Connection is not established")
-            return None
+            logging.error("[MySQL.execute_query] Error occurred: Connection is not established.")
+            raise Exception
         logging.info(f"Executing Query: \n{query}")
 
         try:
@@ -78,7 +78,7 @@ class MySQLClient:
                 logging.info("Query executed successfully, no rows returned")
                 return None
         except Error as e:
-            logging.error(f"Error occurred[MySQL.execute_query]: {e}")
+            logging.error(f"[MySQL.execute_query] Error occurred: {e}")
             return None
         finally:
             cursor.close()

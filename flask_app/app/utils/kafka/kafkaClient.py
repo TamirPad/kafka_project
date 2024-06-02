@@ -26,9 +26,10 @@ class KafkaClient:
             'auto.offset.reset': 'earliest'
         })
 
-        consumer.subscribe([topic])
 
         try:
+            consumer.subscribe([topic])
+
             while True:
                 msg = consumer.poll(1.0)
                 if msg is None:
