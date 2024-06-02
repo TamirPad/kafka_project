@@ -1,5 +1,6 @@
 from confluent_kafka import Producer, Consumer, KafkaError
 import json
+import logging
 
 class KafkaClient:
     def __init__(self, bootstrap_servers):
@@ -12,9 +13,10 @@ class KafkaClient:
         try:
             producer.produce(topic, json.dumps(message).encode('utf-8'))
             producer.flush()
-            print("Message sent successfully")
+            logging.info("Message sent successfully")
         except Exception as e:
-            print(f"Failed to send message: {e}")
+            logging.error(f"Failed to send message: {e}")
+            raise Exception
     
 
 
@@ -41,11 +43,9 @@ class KafkaClient:
                         print(msg.error())
                         break
                 else:
-                    print('Received message: {}'.format(msg.value().decode('utf-8')))
+                    logging.info('Received message: {}'.format(msg.value().decode('utf-8')))
         except KeyboardInterrupt:
-            pass
+            raise Exception
         finally:
             consumer.close()
 
-    def create_topic(self, topic_name: str, num_partitions: int = 1, replication_factor: int = 1) -> None:
-        pass

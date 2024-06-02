@@ -83,10 +83,17 @@ def update_order(id: str) -> Tuple[dict, int]:
         return jsonify({"error": "Missing required fields: customer_id, product_ids"}), 400
 
     order = Order(id, payload.get('customer_id'), payload.get('product_ids'), 'unknown', datetime.now())
+    
     try:
-        order_dao.update_order(order)
+        order = order_dao.get_order(id)
+        if order == None:
+            return jsonify({"message": "Order not found"}), 404
+        else:
+            order_dao.update_order(order)
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
+
+  
 
     order_info = {"message": "Order updated", "order_id": id}
     kafka_client.produce_message(kafka_topic, order_info)
