@@ -7,10 +7,11 @@ def init_db():
         'user': Config.MYSQL_USER,
         'password': Config.MYSQL_PASSWORD,
         'database': Config.MYSQL_DB,
-        'port': Config.MYSQL_PORT
+        'port': Config.MYSQL_PORT,
+        'pool_name': 'mypool',
+        'pool_size': 10  
     }
     db = MySQLClient(**db_config)
-
     return db
 
 db = init_db()
