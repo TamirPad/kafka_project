@@ -7,6 +7,12 @@ from confluent_kafka.admin import AdminClient, NewTopic
 from confluent_kafka import KafkaException
 
 def create_app():
+    """
+    Function to create a Flask application.
+
+    Returns:
+        Flask: An instance of Flask application.
+    """
     app = Flask(__name__)
     
     # Register blueprints
