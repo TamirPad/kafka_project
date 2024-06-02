@@ -12,7 +12,6 @@ from app.utils.sql.db import db
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-
 orders_bp = Blueprint('orders', __name__)
 
 # Initialize Kafka 
@@ -27,12 +26,27 @@ order_dao = OrderDao(db)
 # Error handling for global exceptions
 @orders_bp.errorhandler(Exception)
 def handle_error(e):
+    """
+    Global error handler for the orders API.
+
+    Args:
+        e (Exception): The exception that occurred.
+
+    Returns:
+        Tuple[dict, int]: A tuple containing the error response JSON and HTTP status code.
+    """
     logging.error('[orders_api.handle_error] An error occurred: %s', e)
     return jsonify({"error": "Internal Server Error"}), 500
 
 
 @orders_bp.route('/')
 def index() -> str:
+    """
+    Display index page with a list of all orders.
+
+    Returns:
+        str: Rendered HTML template.
+    """
     try:
         orders = order_dao.get_all_orders()
     except Exception:
@@ -42,6 +56,12 @@ def index() -> str:
 
 @orders_bp.route('/api/v1/order/', methods=['POST'])
 def create_order() -> Tuple[dict, int]:
+    """
+    Create a new order.
+
+    Returns:
+        Tuple[dict, int]: A tuple containing the response JSON and HTTP status code.
+    """
     payload = request.get_json()
 
     if not payload or 'customer_id' not in payload or 'product_ids' not in payload:
@@ -62,6 +82,15 @@ def create_order() -> Tuple[dict, int]:
 
 @orders_bp.route('/api/v1/order/<string:id>', methods=['GET'])
 def get_order(id: str) -> Tuple[Optional[dict], int]:
+    """
+    Retrieve an order by its ID.
+
+    Args:
+        id (str): The ID of the order to retrieve.
+
+    Returns:
+        Tuple[Optional[dict], int]: A tuple containing the response JSON and HTTP status code.
+    """
     if not id:
         return jsonify({"error": "Invalid order ID"}), 400
     try:
@@ -77,6 +106,15 @@ def get_order(id: str) -> Tuple[Optional[dict], int]:
 
 @orders_bp.route('/api/v1/order/<string:id>', methods=['PUT'])
 def update_order(id: str) -> Tuple[dict, int]:
+    """
+    Update an existing order.
+
+    Args:
+        id (str): The ID of the order to update.
+
+    Returns:
+        Tuple[dict, int]: A tuple containing the response JSON and HTTP status code.
+    """
     payload = request.get_json()
 
     if not payload or 'customer_id' not in payload or 'product_ids' not in payload:
@@ -93,8 +131,6 @@ def update_order(id: str) -> Tuple[dict, int]:
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
 
-  
-
     order_info = {"message": "Order updated", "order_id": id}
     kafka_client.produce_message(kafka_topic, order_info)
 
@@ -103,6 +139,15 @@ def update_order(id: str) -> Tuple[dict, int]:
 
 @orders_bp.route('/api/v1/order/<string:id>', methods=['DELETE'])
 def delete_order(id: str) -> Tuple[dict, int]:
+    """
+    Delete an order by its ID.
+
+    Args:
+        id (str): The ID of the order to delete.
+
+    Returns:
+        Tuple[dict, int]: A tuple containing the response JSON and HTTP status code.
+    """
     if not id:
         return jsonify({"error": "Invalid order ID format"}), 400
 
@@ -115,4 +160,3 @@ def delete_order(id: str) -> Tuple[dict, int]:
     kafka_client.produce_message(kafka_topic, order_info)
     
     return jsonify(order_info), 200
-
