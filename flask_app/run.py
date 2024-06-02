@@ -12,10 +12,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(orders_bp)
 
-    try:
-        # Initialize database connection and schema
-        db.connect()
-        
+    try:        
         # Recreate the 'orders' table 
         schema = """
                     CREATE TABLE IF NOT EXISTS orders (
