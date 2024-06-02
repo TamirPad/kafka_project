@@ -10,7 +10,7 @@ def init_db():
         'port': Config.MYSQL_PORT
     }
     db = MySQL(**db_config)
+
     return db
 
 db = init_db()
-

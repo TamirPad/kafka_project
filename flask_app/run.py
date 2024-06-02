@@ -8,13 +8,27 @@ def create_app():
     # Register blueprints
     app.register_blueprint(orders_bp)
     
-    # Initialize database connection
+    # Initialize database connection and schema
     db.connect()
     
+    # Recreate the 'orders' table 
+    schema = """"
+                CREATE TABLE IF NOT EXISTS orders (
+                    id VARCHAR(255) PRIMARY KEY, 
+                    customerID VARCHAR(255),
+                    product_ids VARCHAR(255),
+                    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                );
+            """
+            
+    db.execute_query(schema)
+
+    
     # Add teardown handler to close the database connection
-    @app.teardown_appcontext
-    def close_db(exception):
-        db.disconnect()
+    # @app.teardown_appcontext
+    # def close_db(exception):
+    #     db.disconnect()
 
     return app
 
