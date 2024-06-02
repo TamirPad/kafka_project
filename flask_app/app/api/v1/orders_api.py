@@ -5,7 +5,7 @@ import json
 import uuid
 from flask import Flask, render_template, Blueprint, jsonify, request
 from app.dao.orders_dao import OrderDao, Order
-from app.utils.sql.MySQL import MySQL
+from app.utils.sql.MySQLClient import MySQLClient
 from app.config import Config
 from app.utils.kafka.kafkaClient import KafkaClient
 from app.utils.sql.db import db
@@ -27,7 +27,7 @@ order_dao = OrderDao(db)
 # Error handling for global exceptions
 @orders_bp.errorhandler(Exception)
 def handle_error(e):
-    logging.error('An error occurred: %s', e)
+    logging.error('An error occurred[orders_api]: %s', e)
     return jsonify({"error": "Internal Server Error"}), 500
 
 

@@ -5,7 +5,7 @@ import logging
 from typing import Optional, List, Dict, Any, Union
 
 
-class MySQL:
+class MySQLClient:
     def __init__(self, host: str, user: str, password: str, database: str, port: int = 3306) -> None:
         """
         Initialize the MySQL connection parameters.
@@ -61,6 +61,7 @@ class MySQL:
         if self.connection is None or not self.connection.is_connected():
             logging.error("Connection is not established")
             return None
+        logging.info(f"Executing Query: \n{query}")
 
         try:
             cursor = self.connection.cursor(buffered=True, dictionary=True)
@@ -77,7 +78,7 @@ class MySQL:
                 logging.info("Query executed successfully, no rows returned")
                 return None
         except Error as e:
-            logging.error(f"Error occurred: {e}")
+            logging.error(f"Error occurred[MySQL.execute_query]: {e}")
             return None
         finally:
             cursor.close()

@@ -1,4 +1,4 @@
-from app.utils.sql.MySQL import MySQL
+from app.utils.sql.MySQLClient import MySQLClient
 from app.config import Config
 
 def init_db():
@@ -9,7 +9,7 @@ def init_db():
         'database': Config.MYSQL_DB,
         'port': Config.MYSQL_PORT
     }
-    db = MySQL(**db_config)
+    db = MySQLClient(**db_config)
 
     return db
 

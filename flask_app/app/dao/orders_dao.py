@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Union
-from app.utils.sql.MySQL import MySQL
+from app.utils.sql.MySQLClient import MySQLClient
 import logging
 
 class Order:
@@ -22,7 +22,7 @@ class Order:
             }
 
 class OrderDao:
-    def __init__(self, db: MySQL) -> None:
+    def __init__(self, db: MySQLClient) -> None:
         self.db = db
 
     def create_order(self, order: Order) -> None:
@@ -38,9 +38,10 @@ class OrderDao:
             logging.error(f"Error occurred while adding order: {e}")
 
     def get_order(self, order_id: str) -> Optional[Order]:
-        query = "SELECT * FROM orders WHERE id = %s"
+        logging.info(f"Getting order id: {order_id}")
+        query = f"SELECT * FROM orders WHERE id = '{order_id}'"
         try:
-            result = self.db.execute_query(query, (order_id,))
+            result = self.db.execute_query(query)
             if result:
                 row = result[0]
                 return Order(row['id'], row['customerID'], row['product_ids'], row['created_date'], row['updated_date'])
