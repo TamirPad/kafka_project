@@ -12,7 +12,7 @@ def create_app():
     db.connect()
     
     # Recreate the 'orders' table 
-    schema = """"
+    schema = """
                 CREATE TABLE IF NOT EXISTS orders (
                     id VARCHAR(255) PRIMARY KEY, 
                     customerID VARCHAR(255),
@@ -21,7 +21,7 @@ def create_app():
                     updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 );
             """
-            
+
     db.execute_query(schema)
 
     
