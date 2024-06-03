@@ -70,7 +70,7 @@ class MySQLClient:
             logging.error("[MySQLClient.execute_query] Error occurred: Could not get connection from pool.")
             raise Exception
 
-        logging.info(f"Executing Query: \n{query}")
+        logging.debug(f"Executing Query: \n{query}")
 
         try:
             cursor = connection.cursor(buffered=True, dictionary=True)
