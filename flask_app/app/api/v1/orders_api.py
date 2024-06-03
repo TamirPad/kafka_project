@@ -60,10 +60,9 @@ def create_order() -> Tuple[dict, int]:
 
     if not payload or 'customer_id' not in payload or 'product_ids' not in payload:
         return jsonify({"error": "Missing required fields: customer_id, product_ids"}), 400
-
-    new_order = Order(str(uuid.uuid4()), payload.get('customer_id'), payload.get('product_ids'), datetime.now(), datetime.now())
     
     try:
+        new_order = Order(str(uuid.uuid4()), payload.get('customer_id'), payload.get('product_ids'), datetime.now(), datetime.now())
         order_dao.create_order(new_order)
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
@@ -120,19 +119,24 @@ def update_order(id: str) -> Tuple[dict, int]:
     if not payload or 'customer_id' not in payload or 'product_ids' not in payload:
         return jsonify({"error": "Missing required fields: customer_id, product_ids"}), 400
 
-    updated_order = Order(id, payload.get('customer_id'), payload.get('product_ids'), 'unknown', datetime.now())
     try:
         current_order = order_dao.get_order(id)
         if current_order == None:
             return jsonify({"message": "Order not found"}), 404
         else:
+            updated_order = Order(id, payload.get('customer_id'), payload.get('product_ids'), current_order.created_date, datetime.now()) 
             order_dao.update_order(updated_order)
+            try:
+                updated_order.created_date=str(updated_order.created_date)
+                updated_order.updated_date=str(updated_order.updated_date)
+                order_service.update_order(updated_order)
+            except Exception as e:
+                logging.error(f"Error accured in order service: {e}")
+
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
-    
-    order_service.update_order(updated_order)
-    order_info = {"message": "Order updated", "order_id": id}
 
+    order_info = {"message": "Order updated", "order_id": id}
     return jsonify(order_info), 200
 
 
@@ -151,11 +155,18 @@ def delete_order(id: str) -> Tuple[dict, int]:
         return jsonify({"error": "Invalid order ID format"}), 400
 
     try:
-        order_dao.delete_order(id)
+        order_to_delete = order_dao.get_order(id)
+        if order_to_delete == None:
+            return jsonify({"message": "Order not found"}), 404
+        else:
+            order_dao.delete_order(id)
+            try:
+                order_service.delete_order(id)
+            except Exception as e:
+                logging.error(f"Error accured in order service: {e}")
+
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
-    
-    order_service.delete_order(id)
+
     order_info = {"message": "Order deleted", "order_id": id}
-    
     return jsonify(order_info), 200
