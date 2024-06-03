@@ -3,9 +3,8 @@ from datetime import datetime
 from typing import Tuple, Optional
 import json
 import uuid
-from flask import Flask, render_template, Blueprint, jsonify, request
+from flask import render_template, Blueprint, jsonify, request
 from app.dao.orders_dao import OrderDao, Order
-from app.utils.sql.MySQLClient import MySQLClient
 from app.config import Config
 from app.utils.kafka.kafkaClient import KafkaClient
 from app.utils.sql.db import db
@@ -67,14 +66,14 @@ def create_order() -> Tuple[dict, int]:
     if not payload or 'customer_id' not in payload or 'product_ids' not in payload:
         return jsonify({"error": "Missing required fields: customer_id, product_ids"}), 400
 
-    order = Order(str(uuid.uuid4()), payload.get('customer_id'), payload.get('product_ids'), datetime.now(), datetime.now())
+    new_order = Order(str(uuid.uuid4()), payload.get('customer_id'), payload.get('product_ids'), datetime.now(), datetime.now())
     
     try:
-        order_dao.create_order(order)
+        order_dao.create_order(new_order)
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
 
-    order_info = {"message": "Order created", "order_id": order.id}
+    order_info = {"message": "Order created", "order_id": new_order.id}
     kafka_client.produce_message(kafka_topic, order_info)
 
     return jsonify(order_info), 201
@@ -92,7 +91,8 @@ def get_order(id: str) -> Tuple[Optional[dict], int]:
         Tuple[Optional[dict], int]: A tuple containing the response JSON and HTTP status code.
     """
     if not id:
-        return jsonify({"error": "Invalid order ID"}), 400
+        return jsonify({"error": "Invalid order ID format"}), 400
+
     try:
         order = order_dao.get_order(id)
     except Exception:
@@ -120,14 +120,13 @@ def update_order(id: str) -> Tuple[dict, int]:
     if not payload or 'customer_id' not in payload or 'product_ids' not in payload:
         return jsonify({"error": "Missing required fields: customer_id, product_ids"}), 400
 
-    order = Order(id, payload.get('customer_id'), payload.get('product_ids'), 'unknown', datetime.now())
-    
+    updated_order = Order(id, payload.get('customer_id'), payload.get('product_ids'), 'unknown', datetime.now())
     try:
-        order = order_dao.get_order(id)
-        if order == None:
+        current_order = order_dao.get_order(id)
+        if current_order == None:
             return jsonify({"message": "Order not found"}), 404
         else:
-            order_dao.update_order(order)
+            order_dao.update_order(updated_order)
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
 
