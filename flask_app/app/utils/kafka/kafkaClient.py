@@ -28,7 +28,7 @@ class KafkaClient:
         producer = Producer({'bootstrap.servers': self.bootstrap_servers})
 
         try:
-            producer.produce(topic, json.dumps(message).encode('utf-8'))
+            producer.produce(topic, message)
             producer.flush()
             logging.info("Message sent successfully")
         except Exception as e:
