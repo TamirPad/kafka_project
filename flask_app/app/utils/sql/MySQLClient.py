@@ -28,9 +28,11 @@ class MySQLClient:
         self._configure_logging()
         self._initialize_pool()
 
+
     def _configure_logging(self) -> None:
         """Configure logging for the MySQL class."""
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
     def _initialize_pool(self) -> None:
         """Initialize the MySQL connection pool."""
@@ -50,12 +52,14 @@ class MySQLClient:
             logging.error(f"[MySQLClient._initialize_pool] Error occurred: {e}")
             self.pool = None
 
+
     def get_connection(self):
         """Get a connection from the pool."""
         if self.pool is None:
             logging.error("[MySQLClient.get_connection] Error occurred: Connection pool is not initialized.")
             raise Exception
         return self.pool.get_connection()
+
 
     def execute_query(self, query: str, params: Optional[Union[Dict[str, Any], List[Any]]] = None) -> Optional[List[Dict[str, Any]]]:
         """

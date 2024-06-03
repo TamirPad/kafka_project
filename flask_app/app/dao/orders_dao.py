@@ -23,6 +23,7 @@ class Order:
         self.created_date = created_date
         self.updated_date = updated_date
 
+
     def to_dict(self) -> Dict[str, Any]:
         """
         Convert Order object to a dictionary.
@@ -38,6 +39,7 @@ class Order:
             "updated_date": self.updated_date.isoformat()
         }
 
+
 class OrderDao:
     """
     Data Access Object for managing orders in the database.
@@ -48,6 +50,7 @@ class OrderDao:
 
     def __init__(self, db: MySQLClient) -> None:
         self.db = db
+
 
     def create_order(self, order: Order) -> None:
         """
@@ -67,6 +70,7 @@ class OrderDao:
         try:
             self.db.execute_query(query, params)
             logging.info("Order added successfully")
+            return Order(order.id, order.customer_id, order.product_ids, order.created_date, order.updated_date)
         except Exception as e:
             logging.error(f"[orders_dao.create] Error occurred while adding order: {e}")
             raise Exception
@@ -145,6 +149,7 @@ class OrderDao:
         except Exception as e:
             logging.error(f"Error occurred while deleting order: {e}")
             raise Exception
+
 
     def get_all_orders(self) -> List[Order]:
         """

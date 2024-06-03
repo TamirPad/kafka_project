@@ -34,7 +34,6 @@ class KafkaClient:
         except Exception as e:
             logging.error(f"Failed to send message: {e}")
             raise Exception
-    
 
 
     def consume_messages(self, topic: str) -> None:
