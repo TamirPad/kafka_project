@@ -3,7 +3,7 @@ syntax = "proto3";
 message Order {
     string id = 1;
     string customer_id = 2;
-    repeated string product_ids = 3;
+    string product_ids = 3;
     string created_date = 4;
     string updated_date = 5;
 }

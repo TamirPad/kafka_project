@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11order_event.proto\"i\n\x05Order\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x63ustomer_id\x18\x02 \x01(\t\x12\x13\n\x0bproduct_ids\x18\x03 \x03(\t\x12\x14\n\x0c\x63reated_date\x18\x04 \x01(\t\x12\x14\n\x0cupdated_date\x18\x05 \x01(\tb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11order_event.proto\"i\n\x05Order\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x63ustomer_id\x18\x02 \x01(\t\x12\x13\n\x0bproduct_ids\x18\x03 \x01(\t\x12\x14\n\x0c\x63reated_date\x18\x04 \x01(\t\x12\x14\n\x0cupdated_date\x18\x05 \x01(\tb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
