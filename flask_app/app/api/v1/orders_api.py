@@ -6,6 +6,7 @@ import uuid
 from flask import render_template, Blueprint, jsonify, request
 from app.dao.orders_dao import OrderDao, Order
 from app.config import Config
+from app.services.order_service import OrderService
 from app.utils.kafka.kafkaClient import KafkaClient
 from app.utils.sql.db import db
 
@@ -13,16 +14,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 orders_bp = Blueprint('orders', __name__)
 
-# Initialize Kafka 
-kafka_bootstrap_servers = Config.KAFKA_BOOTSTRAP_SERVERS
-kafka_topic = Config.KAFKA_TOPIC
-kafka_client = KafkaClient(kafka_bootstrap_servers)
-
-# Initialize OrderDao
+kafka_client = KafkaClient(Config.KAFKA_BOOTSTRAP_SERVERS)
+order_service = OrderService(kafka_client)
 order_dao = OrderDao(db)
 
-
-# Error handling for global exceptions
 @orders_bp.errorhandler(Exception)
 def handle_error(e):
     """
@@ -65,16 +60,20 @@ def create_order() -> Tuple[dict, int]:
 
     if not payload or 'customer_id' not in payload or 'product_ids' not in payload:
         return jsonify({"error": "Missing required fields: customer_id, product_ids"}), 400
-
-    new_order = Order(str(uuid.uuid4()), payload.get('customer_id'), payload.get('product_ids'), datetime.now(), datetime.now())
     
     try:
+        new_order = Order(str(uuid.uuid4()), payload.get('customer_id'), payload.get('product_ids'), datetime.now(), datetime.now())
         order_dao.create_order(new_order)
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
+    try:
+        new_order.created_date=str(new_order.created_date)
+        new_order.updated_date=str(new_order.updated_date)
+        order_service.create_order(new_order)
+    except Exception as e:
+        logging.error(f"Error accured in order service: {e}")
 
     order_info = {"message": "Order created", "order_id": new_order.id}
-    kafka_client.produce_message(kafka_topic, order_info)
 
     return jsonify(order_info), 201
 
@@ -120,19 +119,24 @@ def update_order(id: str) -> Tuple[dict, int]:
     if not payload or 'customer_id' not in payload or 'product_ids' not in payload:
         return jsonify({"error": "Missing required fields: customer_id, product_ids"}), 400
 
-    updated_order = Order(id, payload.get('customer_id'), payload.get('product_ids'), 'unknown', datetime.now())
     try:
         current_order = order_dao.get_order(id)
         if current_order == None:
             return jsonify({"message": "Order not found"}), 404
         else:
+            updated_order = Order(id, payload.get('customer_id'), payload.get('product_ids'), current_order.created_date, datetime.now()) 
             order_dao.update_order(updated_order)
+            try:
+                updated_order.created_date=str(updated_order.created_date)
+                updated_order.updated_date=str(updated_order.updated_date)
+                order_service.update_order(updated_order)
+            except Exception as e:
+                logging.error(f"Error accured in order service: {e}")
+
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
 
     order_info = {"message": "Order updated", "order_id": id}
-    kafka_client.produce_message(kafka_topic, order_info)
-
     return jsonify(order_info), 200
 
 
@@ -151,11 +155,18 @@ def delete_order(id: str) -> Tuple[dict, int]:
         return jsonify({"error": "Invalid order ID format"}), 400
 
     try:
-        order_dao.delete_order(id)
+        order_to_delete = order_dao.get_order(id)
+        if order_to_delete == None:
+            return jsonify({"message": "Order not found"}), 404
+        else:
+            order_dao.delete_order(id)
+            try:
+                order_service.delete_order(id)
+            except Exception as e:
+                logging.error(f"Error accured in order service: {e}")
+
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
-    
+
     order_info = {"message": "Order deleted", "order_id": id}
-    kafka_client.produce_message(kafka_topic, order_info)
-    
     return jsonify(order_info), 200
