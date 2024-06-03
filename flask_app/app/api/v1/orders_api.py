@@ -6,6 +6,7 @@ import uuid
 from flask import render_template, Blueprint, jsonify, request
 from app.dao.orders_dao import OrderDao, Order
 from app.config import Config
+from app.services.order_service import OrderService
 from app.utils.kafka.kafkaClient import KafkaClient
 from app.utils.sql.db import db
 
@@ -13,16 +14,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 orders_bp = Blueprint('orders', __name__)
 
-# Initialize Kafka 
-kafka_bootstrap_servers = Config.KAFKA_BOOTSTRAP_SERVERS
-kafka_topic = Config.KAFKA_TOPIC
-kafka_client = KafkaClient(kafka_bootstrap_servers)
-
-# Initialize OrderDao
+kafka_client = KafkaClient(Config.KAFKA_BOOTSTRAP_SERVERS)
+order_service = OrderService(kafka_client)
 order_dao = OrderDao(db)
 
-
-# Error handling for global exceptions
 @orders_bp.errorhandler(Exception)
 def handle_error(e):
     """
@@ -72,9 +67,14 @@ def create_order() -> Tuple[dict, int]:
         order_dao.create_order(new_order)
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
+    try:
+        new_order.created_date=str(new_order.created_date)
+        new_order.updated_date=str(new_order.updated_date)
+        order_service.create_order(new_order)
+    except Exception as e:
+        logging.error(f"Error accured in order service: {e}")
 
     order_info = {"message": "Order created", "order_id": new_order.id}
-    kafka_client.produce_message(kafka_topic, order_info)
 
     return jsonify(order_info), 201
 
@@ -129,9 +129,9 @@ def update_order(id: str) -> Tuple[dict, int]:
             order_dao.update_order(updated_order)
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
-
+    
+    order_service.update_order(updated_order)
     order_info = {"message": "Order updated", "order_id": id}
-    kafka_client.produce_message(kafka_topic, order_info)
 
     return jsonify(order_info), 200
 
@@ -155,7 +155,7 @@ def delete_order(id: str) -> Tuple[dict, int]:
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
     
+    order_service.delete_order(id)
     order_info = {"message": "Order deleted", "order_id": id}
-    kafka_client.produce_message(kafka_topic, order_info)
     
     return jsonify(order_info), 200
