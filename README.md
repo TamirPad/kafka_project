@@ -1,53 +1,68 @@
-# KAFKA Project
+# Project Name
 
 ## Description
 
-This project is a Flask application for managing orders, with integration for Apache Kafka and MySQL.
+This project comprises three main components:
 
-## Setup
+- **Infrastructure Setup**: Docker Compose files for deploying Kafka, Zookeeper, MySQL, Elasticsearch, and Kibana services.
+  
+- **Flask Application**: An API for managing orders, interacting with MySQL, and producing Kafka messages.
+  
+- **Kafka Consumer Application**: Consumes messages from Kafka topics and indexes them into Elasticsearch.
+
+
+## Setup Instructions
 
 ### Prerequisites
 
 - Docker
 - Docker Compose
 
-### Installation
+### Steps
 
-1. Clone this repository:
+1. Clone the repository:
+
+    ```bash
     git clone <repository_url>
-
-2. Navigate to the project directory:
     cd <project_directory>
+    ```
 
-3. Create a .env file with the following environment variables:
+2. Start the infrastructure services using Docker Compose:
 
-        * MySQL
-        
-                MYSQL_HOST=mysqldb.dev
+    ```bash
+    docker-compose up -d
+    ```
 
-                MYSQL_USER=test_user
+3. Configure the Flask application:
+   - Navigate to the `flask_app` directory.
+   - Update the `.env` file with your MySQL and Kafka settings.
 
-                MYSQL_PASSWORD=test_password
+4. Start the Flask application:
 
-                MYSQL_DB=test_db
+    ```bash
+    python run.py
+    ```
 
-        * Kafka
+5. Configure the Kafka consumer application:
+   - Navigate to the `consumer_app` directory.
+   - Update the `main.py` file with your Kafka and Elasticsearch settings.
 
-                KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+6. Start the Elasticsearch consumer application:
 
-                KAFKA_TOPIC=my_topic
+    ```bash
+    python main.py
+    ```
 
-### Running the Application
+## Usage
 
-1. Start the Docker containers:
+- **Flask Application**:
+  - Access the API endpoints to manage orders (e.g., create, retrieve, update, delete).
+  - Example: GET http://localhost:5000/api/v1/order/<order_id>
 
-        docker-compose up -d
-        Access the application at http://localhost:5000.
+- **Kafka Consumer Application**:
+  - Consumes messages from the "orders" topic.
+  - Indexes order messages into Elasticsearch for further analysis.
 
-2. Stopping the Application
+## Contributing
 
-        To stop the Docker containers, run:
-        docker-compose down
-        
-
-*In the future, the Flask application will be containerized and included in the Docker Compose setup for easier deployment. The updated setup will be as follows:
+Contributions are welcome! Please fork the repository and submit a pull request with your changes.
