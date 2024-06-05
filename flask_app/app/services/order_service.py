@@ -1,6 +1,7 @@
 from app.utils.kafka.kafkaClient import KafkaClient
 from app.dao.orders_dao import Order, OrderDao
 from app.utils.kafka.kafka_messages.serializers.proto_order_serializer import ProtoOrderSerializer
+from app.utils.kafka.kafka_messages.serializers.generated_protobuf.order_event_pb2 import OperationType  
 from app.config import Config
 import logging
 
@@ -16,7 +17,7 @@ class OrderService:
         try:
             logging.info(f"Creating order with ID: {order.id}")
             self.order_dao.create_order(order)
-            serialized_order = ProtoOrderSerializer.serialize_order(order)
+            serialized_order = ProtoOrderSerializer.serialize_order(order, OperationType.ORDER_CREATED)
             self.kafka_client.produce_message(self.kafka_topic, serialized_order)
             logging.info(f"Order created and Kafka message produced for order ID: {order.id}")
         except Exception as e:
@@ -26,7 +27,7 @@ class OrderService:
         try:
             logging.info(f"Updating order with ID: {order.id}")
             self.order_dao.update_order(order)
-            serialized_order = ProtoOrderSerializer.serialize_order(order)
+            serialized_order = ProtoOrderSerializer.serialize_order(order, OperationType.ORDER_UPDATED)
             self.kafka_client.produce_message(self.kafka_topic, serialized_order)
             logging.info(f"Order updated and Kafka message produced for order ID: {order.id}")
         except Exception as e:
@@ -36,8 +37,9 @@ class OrderService:
         try:
             logging.info(f"Deleting order with ID: {order.id}")
             self.order_dao.delete_order(order)
-            serialized_order = ProtoOrderSerializer.serialize_order(order)
+            serialized_order = ProtoOrderSerializer.serialize_order(order, OperationType.ORDER_DELETED)
             self.kafka_client.produce_message(self.kafka_topic, serialized_order)
             logging.info(f"Order deleted and Kafka message produced for order ID: {order.id}")
         except Exception as e:
             logging.error(f"Failed to delete order: {e}")
+
