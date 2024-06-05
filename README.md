@@ -36,6 +36,7 @@ This project comprises three main components:
 3. Configure the Flask application:
    - Navigate to the `flask_app` directory.
    - Update the `.env` file with your MySQL and Kafka settings.
+   - Pip install requirements file
 
 4. Start the Flask application:
 
