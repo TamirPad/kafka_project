@@ -20,8 +20,8 @@ class Order:
         self.id = id
         self.customer_id = customer_id
         self.product_ids = product_ids
-        self.created_date = created_date
-        self.updated_date = updated_date
+        self.created_date = str(created_date)
+        self.updated_date = str(updated_date)
 
 
     def to_dict(self) -> Dict[str, Any]:
@@ -35,8 +35,8 @@ class Order:
             "id": self.id,
             "customer_id": self.customer_id,
             "product_ids": self.product_ids,
-            "created_date": self.created_date.isoformat(),
-            "updated_date": self.updated_date.isoformat()
+            "created_date": self.created_date,
+            "updated_date": self.updated_date
         }
 
 
@@ -128,7 +128,7 @@ class OrderDao:
             raise Exception
 
 
-    def delete_order(self, order_id: str) -> str:
+    def delete_order(self, order: Order) -> Optional[Order]:
         """
         Delete an order by its ID.
 
@@ -143,9 +143,9 @@ class OrderDao:
         """
         query = "DELETE FROM orders WHERE id = %s"
         try:
-            self.db.execute_query(query, (order_id,))
-            logging.info(f"Order {order_id} deleted successfully")
-            return order_id
+            self.db.execute_query(query, (order.id,))
+            logging.info(f"Order {order.id} deleted successfully")
+            return order
         except Exception as e:
             logging.error(f"Error occurred while deleting order: {e}")
             raise Exception
