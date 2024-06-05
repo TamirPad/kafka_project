@@ -1,5 +1,5 @@
 import logging
-from deserialize import order_event_pb2
+from deserialize.order_event_pb2 import ProtoOrder, OperationType, OrderMessage
 from typing import Optional, List, Dict, Any, Union
 
 
@@ -42,17 +42,22 @@ class Order:
 class ProtoOrderSerializer:
     
     @staticmethod
-    def serialize_order(order: Order) -> bytes:
+    def serialize_order(order: Order, operation_type: OperationType) -> bytes:
         try:
-            logging.debug(f"Oder to serialize: {order.to_dict()}")
-            proto_order = order_event_pb2.Order()
+            logging.debug(f"Proto Order to serialize: {order.to_dict()}")
+            proto_order =ProtoOrder()
             proto_order.id = order.id
             proto_order.customer_id = order.customer_id
             proto_order.product_ids = order.product_ids
             proto_order.created_date = order.created_date
             proto_order.updated_date = order.updated_date
+            
+            order_message = OrderMessage(
+                operation_type = operation_type,
+                proto_order = proto_order
+            )
 
-            serialized_order = proto_order.SerializeToString()
+            serialized_order = order_message.SerializeToString()
             logging.debug("Order serialized successfully.")
             return serialized_order
         except Exception as e:
@@ -60,12 +65,12 @@ class ProtoOrderSerializer:
             raise
 
     @staticmethod
-    def deserialize_order(msg: bytes) -> order_event_pb2.Order:
+    def deserialize_order(msg: bytes) -> OrderMessage:
         try:
-            proto_order = order_event_pb2.Order()
-            proto_order.ParseFromString(msg)
+            order_message = OrderMessage()
+            order_message.ParseFromString(msg)
             logging.debug("Order deserialized successfully.")
-            return proto_order
+            return order_message
         except Exception as e:
             logging.error(f"Error deserializing order: {e}")
             raise

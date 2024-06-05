@@ -1,6 +1,8 @@
 from elasticsearch import Elasticsearch
 from confluent_kafka import Consumer, KafkaError
 from deserialize.proto_order_serializer import ProtoOrderSerializer
+from deserialize.order_event_pb2 import ProtoOrder, OperationType, OrderMessage
+
 import logging
 
 
@@ -34,20 +36,24 @@ try:
                 logging.error("Kafka error: {}".format(msg.error()))
                 break
         else:
-            order = ProtoOrderSerializer.deserialize_order(msg.value())
-            logging.info('Received message: {}'.format(order))
+            order_message = ProtoOrderSerializer.deserialize_order(msg.value())
+            logging.info('Received message: {}'.format(order_message))
 
             # Index the order into Elasticsearch
             try:
-                json_order = {
-                        "id": order.id,
-                        "customer_id": order.customer_id,
-                        "product_ids": order.product_ids,
-                        "created_date": order.created_date,
-                        "updated_date": order.updated_date
-                }
+                json_msg = {
+                    "message": str(OperationType.Name(order_message.operation_type)),
 
-                client.index(index="orders", body=json_order)
+                    "order": {
+                        "id": order_message.proto_order.id,
+                        "customer_id": order_message.proto_order.customer_id,
+                        "product_ids": order_message.proto_order.product_ids,
+                        "created_date": order_message.proto_order.created_date,
+                        "updated_date": order_message.proto_order.updated_date
+                    }
+                }
+                print(json_msg)
+                client.index(index="orders", body=json_msg)
             except Exception as e:
                 logging.error("Error indexing order into Elasticsearch: {}".format(e))
 
