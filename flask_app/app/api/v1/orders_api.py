@@ -15,8 +15,9 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 orders_bp = Blueprint('orders', __name__)
 
 kafka_client = KafkaClient(Config.KAFKA_BOOTSTRAP_SERVERS)
-order_service = OrderService(kafka_client)
 order_dao = OrderDao(db)
+
+order_service = OrderService(kafka_client, order_dao)
 
 @orders_bp.errorhandler(Exception)
 def handle_error(e):
@@ -63,19 +64,11 @@ def create_order() -> Tuple[dict, int]:
     
     try:
         new_order = Order(str(uuid.uuid4()), payload.get('customer_id'), payload.get('product_ids'), datetime.now(), datetime.now())
-        order_dao.create_order(new_order)
+        order_service.create_order(new_order)
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
-    try:
-        new_order.created_date=str(new_order.created_date)
-        new_order.updated_date=str(new_order.updated_date)
-        order_service.create_order(new_order)
-    except Exception as e:
-        logging.error(f"Error accured in order service: {e}")
 
-    order_info = {"message": "Order created", "order_id": new_order.id}
-
-    return jsonify(order_info), 201
+    return jsonify({"message": "Order created", "order_id": new_order.id}), 201
 
 
 @orders_bp.route('/api/v1/order/<string:id>', methods=['GET'])
@@ -124,20 +117,12 @@ def update_order(id: str) -> Tuple[dict, int]:
         if current_order == None:
             return jsonify({"message": "Order not found"}), 404
         else:
-            updated_order = Order(id, payload.get('customer_id'), payload.get('product_ids'), current_order.created_date, datetime.now()) 
-            order_dao.update_order(updated_order)
-            try:
-                updated_order.created_date=str(updated_order.created_date)
-                updated_order.updated_date=str(updated_order.updated_date)
-                order_service.update_order(updated_order)
-            except Exception as e:
-                logging.error(f"Error accured in order service: {e}")
-
+            updated_order = Order(id, payload.get('customer_id'), payload.get('product_ids'), current_order.created_date, datetime.now() )
+            order_service.update_order(updated_order)
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
 
-    order_info = {"message": "Order updated", "order_id": id}
-    return jsonify(order_info), 200
+    return jsonify({"message": "Order updated", "order_id": id}), 200
 
 
 @orders_bp.route('/api/v1/order/<string:id>', methods=['DELETE'])
@@ -159,14 +144,8 @@ def delete_order(id: str) -> Tuple[dict, int]:
         if order_to_delete == None:
             return jsonify({"message": "Order not found"}), 404
         else:
-            order_dao.delete_order(id)
-            try:
-                order_service.delete_order(id)
-            except Exception as e:
-                logging.error(f"Error accured in order service: {e}")
-
+            order_service.delete_order(order_to_delete)
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
 
-    order_info = {"message": "Order deleted", "order_id": id}
-    return jsonify(order_info), 200
+    return jsonify({"message": "Order deleted", "order_id": id}), 200
