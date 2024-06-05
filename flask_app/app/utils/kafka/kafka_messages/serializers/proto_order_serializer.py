@@ -1,6 +1,6 @@
 import logging
 from app.dao.orders_dao import Order
-from app.utils.kafka.kafka_messages.generated_protobuf import order_event_pb2
+from app.utils.kafka.kafka_messages.serializers.generated_protobuf import order_event_pb2
 
 class ProtoOrderSerializer:
     
