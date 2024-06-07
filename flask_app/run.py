@@ -18,22 +18,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(orders_bp)
 
-    try:        
-        # Recreate the 'orders' table 
-        schema = """
-                    CREATE TABLE IF NOT EXISTS orders (
-                        id VARCHAR(255) PRIMARY KEY, 
-                        customerID VARCHAR(255),
-                        product_ids VARCHAR(255),
-                        created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-                    );
-                """
   
-        db.execute_query(schema)
-    except Exception as e:
-        logging.error("[run.create_app] Error occurred while initializing database schema")
-
     # Create an instance of KafkaAdminClient
     admin_client = AdminClient({'bootstrap.servers':Config.KAFKA_BOOTSTRAP_SERVERS})
 

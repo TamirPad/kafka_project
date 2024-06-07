@@ -1,5 +1,6 @@
 from app.utils.sql.MySQLClient import MySQLClient
 from app.config import Config
+import logging
 
 def init_db():
     """
@@ -18,6 +19,24 @@ def init_db():
         'pool_size': 10  
     }
     db = MySQLClient(**db_config)
+
+    try:        
+        # Recreate the 'orders' table 
+        schema = """
+                    CREATE TABLE IF NOT EXISTS orders (
+                        id VARCHAR(255) PRIMARY KEY, 
+                        customerID VARCHAR(255),
+                        product_ids VARCHAR(255),
+                        created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                    );
+                """
+  
+        db.execute_query(schema)
+    except Exception as e:
+        logging.error("[db.init_db] Error occurred while initializing database schema")
+    logging.info(" MySQL db Initialized successfully.")
+
     return db
 
 db = init_db()
