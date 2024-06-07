@@ -12,6 +12,8 @@ class KafkaClient:
 
     def __init__(self, bootstrap_servers: str) -> None:
         self.bootstrap_servers = bootstrap_servers
+        logging.info("KafkaClient initialized successfully")
+
 
 
     def produce_message(self, topic: str, message: str) -> None:
