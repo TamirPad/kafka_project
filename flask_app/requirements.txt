@@ -5,3 +5,4 @@ confluent-kafka
 elasticsearch
 protobuf
 pytest
+werkzeug==2.0.3
