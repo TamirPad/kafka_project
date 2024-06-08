@@ -20,7 +20,8 @@ def create_app(config_class=Config):
     app.register_blueprint(orders_bp)
 
     # Create topic 'orders' if doesn't exists
-    kafkaAdmin.init_topic()
+    kafka_admin = kafkaAdmin(Config.KAFKA_BOOTSTRAP_SERVERS)
+    kafka_admin.init_topic(Config.KAFKA_TOPIC)
   
     return app
 
