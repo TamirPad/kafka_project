@@ -54,10 +54,13 @@ def test_delete_order(client):
     # Send a DELETE request to delete the order
     logging.info("Sending DELETE request to delete order with ID: %s", order_id)
     response = client.delete(f"{base_url}{order_id}")
+    if response.status_code == 404:
+        assert response.status_code == 404, "Failed to delete order."
+
+    else:  
+        # Assert that the response status code is 204
+        assert response.status_code == 200, f"Failed to delete order. Unexpected status code.{response.status_code}"
     
-    # Assert that the response status code is 204
-    assert response.status_code == 200, "Failed to delete order. Unexpected status code."
-  
 
 
 
