@@ -1,9 +1,11 @@
 import os
-from dotenv import load_dotenv
+import logging
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
 class Config:
+    logging.info("****trying to read env variable")
     MYSQL_HOST = os.getenv('MYSQL_HOST')
     MYSQL_USER = os.getenv('MYSQL_USER')
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')

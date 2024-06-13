@@ -5,7 +5,7 @@ from app.config import Config, TestingConfig
 
 
 
-def create_app(config_class=Config):
+def create_app():
     """
     Function to create a Flask application.
 
@@ -14,7 +14,6 @@ def create_app(config_class=Config):
     """
 
     app = Flask(__name__)
-    app.config.from_object(config_class)
 
     # Register blueprints
     app.register_blueprint(orders_bp)

@@ -5,7 +5,7 @@ import logging
 from typing import Optional, List, Dict, Any, Union
 
 class MySQLClient:
-    def __init__(self, host: str, user: str, password: str, database: str, port: int = 3306, pool_name: str = 'mypool', pool_size: int = 10) -> None:
+    def __init__(self, host: str, user: str, password: str, database: str, port: int , pool_name: str = 'mypool', pool_size: int = 10) -> None:
         """
         Initialize the MySQL connection parameters.
 
@@ -45,7 +45,9 @@ class MySQLClient:
                 user=self.user,
                 password=self.password,
                 database=self.database,
-                port=self.port
+                port=self.port,
+                use_pure=True,
+                ssl_disabled= True
             )
             logging.info("MySQL connection pool initialized successfully")
         except Error as e:
@@ -61,7 +63,7 @@ class MySQLClient:
         return self.pool.get_connection()
 
 
-    def execute_query(self, query: str, params: Optional[Union[Dict[str, Any], List[Any]]] = None) -> Optional[List[Dict[str, Any]]]:
+    def execute(self, query: str, params: Optional[Union[Dict[str, Any], List[Any]]] = None) -> Optional[List[Dict[str, Any]]]:
         """
         Execute a SQL query.
 

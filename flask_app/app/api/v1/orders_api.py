@@ -43,6 +43,7 @@ def index() -> str:
         str: Rendered HTML template.
     """
     try:
+        
         orders = order_dao.get_all_orders()
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500

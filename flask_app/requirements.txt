@@ -7,3 +7,4 @@ protobuf
 pytest
 werkzeug==2.0.3
 pytest-cov
+testcontainers=4.5.1

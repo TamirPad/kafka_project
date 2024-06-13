@@ -68,7 +68,7 @@ class OrderDao:
             """
         params = (order.id, order.customer_id, order.product_ids, order.created_date, order.updated_date)
         try:
-            self.db.execute_query(query, params)
+            self.db.execute(query, params)
             logging.info("Order added successfully")
             return Order(order.id, order.customer_id, order.product_ids, order.created_date, order.updated_date)
         except Exception as e:
@@ -92,7 +92,7 @@ class OrderDao:
         logging.info(f"Getting order id: {order_id}")
         query = f"SELECT * FROM orders WHERE id = '{order_id}'"
         try:
-            result = self.db.execute_query(query)
+            result = self.db.execute(query)
             if result:
                 row = result[0]
                 return Order(row['id'], row['customerID'], row['product_ids'], row['created_date'], row['updated_date'])
@@ -120,7 +120,7 @@ class OrderDao:
         query = "UPDATE orders SET customerID = %s, product_ids = %s, updated_date = %s WHERE id = %s"
         params = (order.customer_id, order.product_ids, order.updated_date, order.id)
         try:
-            self.db.execute_query(query, params)
+            self.db.execute(query, params)
             logging.info(f"Order {order.id} updated successfully")
             return self.get_order(order_id=order.id)
         except Exception as e:
@@ -143,7 +143,7 @@ class OrderDao:
         """
         query = "DELETE FROM orders WHERE id = %s"
         try:
-            self.db.execute_query(query, (order.id,))
+            self.db.execute(query, (order.id,))
             logging.info(f"Order {order.id} deleted successfully")
             return order
         except Exception as e:
@@ -163,7 +163,7 @@ class OrderDao:
         """
         query = "SELECT * FROM orders"
         try:
-            result = self.db.execute_query(query)
+            result = self.db.execute(query)
             return [Order(row['id'], row['customerID'], row['product_ids'], row['created_date'], row['updated_date']) for row in result]
         except Exception as e:
             logging.error(f"[orders_dao.get_all_orders] Error occurred while retrieving all orders: {e}")
