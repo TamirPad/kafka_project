@@ -1,5 +1,6 @@
 from app.utils.kafka.kafkaClient import KafkaClient
-from app.dao.orders_dao import Order, OrderDao
+from app.dao.orders_dao import OrderDao
+from app.models.order import Order
 from app.utils.kafka.kafka_messages.serializers.proto_order_serializer import ProtoOrderSerializer
 from app.utils.kafka.kafka_messages.serializers.generated_protobuf.order_event_pb2 import OperationType  
 from app.config import Config

@@ -4,7 +4,9 @@ from typing import Tuple, Optional
 import json
 import uuid
 from flask import render_template, Blueprint, jsonify, request
-from app.dao.orders_dao import OrderDao, Order
+from app.dao.orders_dao import OrderDao
+from app.models.order import Order
+
 from app.config import Config
 from app.services.order_service import OrderService
 from app.utils.kafka.kafkaClient import KafkaClient
