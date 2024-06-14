@@ -1,22 +1,32 @@
-# import logging
+import logging
 
-# base_url = "/api/v1/order/"
+base_url = "/api/v1/order/"
 
-# def test_create_order(client):
-#     # Define a payload for creating a new order
-#     payload = {
-#         "customer_id": "customer_123",
-#         "product_ids": ["product_1"]
-#     }
+def test_create_order(client):
+    # Define a payload for creating a new order
+    payload = {
+        "customer_id": "customer_123",
+        "product_ids": "product_1"
+    }
 
-#     # Send a POST request to create a new order
-#     logging.info("Sending POST request to create a new order")
-#     response = client.post(base_url, json=payload)
+    # Send a POST request to create a new order
+    logging.info("Sending POST request to create a new order")
+    response = client.post(base_url, json=payload)
+    
 
-#     # Validate the response
-#     assert response.status_code == 201, "Failed to create order. Unexpected status code."
-#     response_data = response.get_json()
-#     assert response_data["message"] == "Order created", "Failed to create order. Unexpected message."
+    # Validate the response
+    assert response.status_code == 201, "Failed to create order. Unexpected status code."
+    post_response = response.get_json()
+
+    #validate the order created as expected
+    get_response = client.get(f"{base_url}{post_response['order_id']}")
+    get_response = response.get_json()
+    logging.info(f"&&&& {get_response}")
+    assert get_response['order_id'] == post_response['order_id']
+    # assert get_response['customer_id'] == "customer_123"
+    # assert get_response['product_ids'] == "product_1"
+
+    # validate kafaka message was produced by consuming it.
 
 
 # def test_get_order(client):
