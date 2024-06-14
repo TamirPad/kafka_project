@@ -3,11 +3,10 @@ import os
 import time
 
 import pytest
-import sqlalchemy
 from testcontainers.kafka import KafkaContainer
-from testcontainers.mysql import MySqlContainer
 from testcontainers.core.container import DockerContainer
 import testcontainers.core.waiting_utils as waiting_utils
+
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -67,27 +66,6 @@ def kafka() -> KafkaContainer:
     with KafkaContainer() as kafka:
         yield kafka
 
-# @pytest.fixture(scope="session", autouse=True)
-# @pytest.mark.timeout(33333)
-# def mysql() -> MySqlContainer:
-#
-#     time.sleep(353425)
-#     with MySqlContainer(image="mysql/mysqlserver:8.0") as mysql:
-#         engine = sqlalchemy.create_engine(mysql.get_connection_url())
-#
-#     logging.info("** mysql container is up - now trying to create table. details: " + mysql.get_connection_url())
-#     with engine.begin() as connection:
-#         schema = """
-#                     CREATE TABLE IF NOT EXISTS orders (
-#                         id VARCHAR(255) PRIMARY KEY,
-#                         customerID VARCHAR(255),
-#                         product_ids VARCHAR(255),
-#                         created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-#                         updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-#                     );
-#                 """
-#     connection.execute(schema)
-#     yield mysql
 
 @pytest.fixture(scope="session", autouse=True)
 def app(mariaDb, kafka:KafkaContainer):
@@ -113,54 +91,3 @@ def app(mariaDb, kafka:KafkaContainer):
 @pytest.fixture(scope="session", autouse=True)
 def client(app):
     return app.test_client()
-
-
-# @pytest.fixture(scope="session", autouse=True)
-# def app():
-#     print("###SETUP TEST ENVIROMENT#####")
-#     with KafkaContainer() as kafka:
-#         kafkaUri = kafka.get_bootstrap_server()
-#
-#         # Set up MySQL container
-#     with MySqlContainer('mysql:5.7.17') as mysql:
-#         engine = sqlalchemy.create_engine(mysql.get_connection_url())
-#
-#     # Create tables in the MySQL database
-#     with engine.begin() as connection:
-#         schema = """
-#                 CREATE TABLE IF NOT EXISTS orders (
-#                     id VARCHAR(255) PRIMARY KEY,
-#                     customerID VARCHAR(255),
-#                     product_ids VARCHAR(255),
-#                     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-#                     updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-#                 );
-#             """
-#         connection.execute(schema)
-#
-#     logging.info("################# mysql.get_connection ################")
-#     logging.info(f"CONNECTION URI: {mysql.get_connection_url()}")
-#     components = extract_mysql_components(mysql.get_connection_url())
-#
-#     os.environ['MYSQL_HOST'] = components['host']
-#     os.environ['MYSQL_USER'] = components['user']
-#     os.environ['MYSQL_PASSWORD'] = components['password']
-#     os.environ['MYSQL_DB'] = components['database']
-#     os.environ['MYSQL_PORT'] = str(components['port'])
-#
-#     os.environ['KAFKA_BOOTSTRAP_SERVERS'] = kafkaUri
-#     os.environ['KAFKA_TOPIC'] = 'orders'
-#
-#     # Create the Flask app
-#     logging.info("############### reate the Flask app ##################")
-#
-#     from app import create_app
-#
-#     app = create_app()
-#
-#     yield app
-
-
-# @pytest.fixture()
-# def client(app):
-#     return app.test_client()
