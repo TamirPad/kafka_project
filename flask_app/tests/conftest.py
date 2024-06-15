@@ -10,31 +10,8 @@ import testcontainers.core.waiting_utils as waiting_utils
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 
-from urllib.parse import urlparse
-
-
-def extract_mysql_components(connection_string):
-    # Parse the connection string
-    result = urlparse(connection_string)
-
-    # Extract components
-    user = result.username
-    password = result.password
-    host = result.hostname
-    port = result.port
-    database = result.path.lstrip('/')  # Remove leading slash from the path
-
-    return {
-        'user': user,
-        'password': password,
-        'host': host,
-        'port': port,
-        'database': database
-    }
-
 
 @pytest.fixture(scope="session", autouse=True)
-@pytest.mark.timeout(33333)
 def mariaDb() -> str:
     logging.info("** here in mariaDb fixture")
     with DockerContainer("mariadb:latest") \
