@@ -1,12 +1,10 @@
 import logging
 from datetime import datetime
 from typing import Tuple, Optional
-import json
 import uuid
-from flask import render_template, Blueprint, jsonify, request
+from flask import render_template, Blueprint, jsonify, request, Response
 from app.dao.orders_dao import OrderDao
 from app.models.order import Order
-
 from app.config import Config
 from app.services.order_service import OrderService
 from app.utils.kafka.kafkaClient import KafkaClient
@@ -20,28 +18,29 @@ kafka_client = KafkaClient(Config.KAFKA_BOOTSTRAP_SERVERS)
 order_dao = OrderDao(db)
 order_service = OrderService(kafka_client, order_dao)
 
+
 @orders_bp.errorhandler(Exception)
-def handle_error(e):
+def handle_error(e) -> tuple[Response, int]:
     """
-    Global error handler for the orders API.
+    Handle unexpected errors by logging the error and returning a generic error response.
 
     Args:
-        e (Exception): The exception that occurred.
+        e (Exception): The exception that was raised.
 
     Returns:
-        Tuple[dict, int]: A tuple containing the error response JSON and HTTP status code.
+        tuple[Response, int]: A tuple containing a JSON response with an error message and the HTTP status code 500.
     """
     logging.error('[orders_api.handle_error] An error occurred: %s', e)
     return jsonify({"error": "Internal Server Error"}), 500
 
 
 @orders_bp.route('/')
-def index() -> str:
+def index() -> tuple[Response, int] | str:
     """
-    Display index page with a list of all orders.
+    Render the index page with a list of all orders.
 
     Returns:
-        str: Rendered HTML template.
+        tuple[Response, int] | str: The rendered template or an error response.
     """
     try:
         orders = order_dao.get_all_orders()
@@ -51,18 +50,18 @@ def index() -> str:
 
 
 @orders_bp.route('/api/v1/order/', methods=['POST'])
-def create_order() -> Tuple[dict, int]:
+def create_order() -> tuple[Response, int]:
     """
-    Create a new order.
+    Create a new order based on the provided payload.
 
     Returns:
-        Tuple[dict, int]: A tuple containing the response JSON and HTTP status code.
+        tuple[Response, int]: A tuple containing a JSON response with a success message and the HTTP status code 201 or an error message and the appropriate status code.
     """
     payload = request.get_json()
 
     if not payload or 'customer_id' not in payload or 'product_ids' not in payload:
         return jsonify({"error": "Missing required fields: customer_id, product_ids"}), 400
-    
+
     try:
         new_order = Order(str(uuid.uuid4()), payload.get('customer_id'), payload.get('product_ids'), datetime.now(), datetime.now())
         order_service.create_order(new_order)
@@ -73,15 +72,15 @@ def create_order() -> Tuple[dict, int]:
 
 
 @orders_bp.route('/api/v1/order/<string:id>', methods=['GET'])
-def get_order(id: str) -> Tuple[Optional[dict], int]:
+def get_order(id: str) -> tuple[Response, int]:
     """
     Retrieve an order by its ID.
 
     Args:
-        id (str): The ID of the order to retrieve.
+        id (str): The ID of the order.
 
     Returns:
-        Tuple[Optional[dict], int]: A tuple containing the response JSON and HTTP status code.
+        tuple[Response, int]: A tuple containing a JSON response with the order details and the HTTP status code 200 or an error message and the appropriate status code.
     """
     if not id:
         return jsonify({"error": "Invalid order ID format"}), 400
@@ -92,21 +91,21 @@ def get_order(id: str) -> Tuple[Optional[dict], int]:
         return jsonify({"error": "Internal Server Error"}), 500
 
     if order:
-        return  jsonify({"order": order.to_dict()}), 200
+        return jsonify({"message": "Order received", "order": order.to_dict()}), 200
     else:
         return jsonify({"message": "Order not found"}), 404
 
 
 @orders_bp.route('/api/v1/order/<string:id>', methods=['PUT'])
-def update_order(id: str) -> Tuple[dict, int]:
+def update_order(id: str) -> tuple[Response, int]:
     """
-    Update an existing order.
+    Update an existing order based on the provided payload.
 
     Args:
-        id (str): The ID of the order to update.
+        id (str): The ID of the order.
 
     Returns:
-        Tuple[dict, int]: A tuple containing the response JSON and HTTP status code.
+        tuple[Response, int]: A tuple containing a JSON response with a success message and the HTTP status code 200 or an error message and the appropriate status code.
     """
     payload = request.get_json()
 
@@ -114,39 +113,35 @@ def update_order(id: str) -> Tuple[dict, int]:
         return jsonify({"error": "Missing required fields: customer_id, product_ids"}), 400
 
     try:
-        updated_order = Order(id, payload.get('customer_id'), payload.get('product_ids'), 'created_time', datetime.now() )
+        updated_order = Order(id, payload.get('customer_id'), payload.get('product_ids'), 'created_time', datetime.now())
         updated = order_service.update_order(updated_order)
         if not updated:
             return jsonify({"message": "Order not found"}), 404
         else:
-            return jsonify({"message": "Order updated", "order_id": id}), 200
+            return jsonify({"message": "Order updated", "order": updated_order.to_dict()}), 200
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
 
 
-
-
 @orders_bp.route('/api/v1/order/<string:id>', methods=['DELETE'])
-def delete_order(id: str) -> Tuple[dict, int]:
+def delete_order(id: str) -> tuple[Response, int]:
     """
     Delete an order by its ID.
 
     Args:
-        id (str): The ID of the order to delete.
+        id (str): The ID of the order.
 
     Returns:
-        Tuple[dict, int]: A tuple containing the response JSON and HTTP status code.
+        tuple[Response, int]: A tuple containing a JSON response with a success message and the HTTP status code 200 or an error message and the appropriate status code.
     """
     if not id:
         return jsonify({"error": "Invalid order ID format"}), 400
 
     try:
-        deleted = order_service.delete_order(Order(id,'','','',''))
+        deleted = order_service.delete_order(Order(id, '', '', '', ''))
         if not deleted:
             return jsonify({"message": "Order not found"}), 404
         else:
-            return jsonify({"message": "Order deleted", "order_id": id}), 200
-
+            return jsonify({"message": "Order deleted", "order": deleted.to_dict()}), 200
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
-
