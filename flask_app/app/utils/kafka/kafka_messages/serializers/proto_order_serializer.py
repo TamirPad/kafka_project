@@ -7,7 +7,7 @@ class ProtoOrderSerializer:
     @staticmethod
     def serialize_order(order: Order, operation_type: OperationType) -> bytes:
         try:
-            logging.debug(f"Proto Order to serialize: {order.to_dict()}")
+            logging.debug(f"[ProtoOrderSerializer.serialize_order] Proto Order to serialize: {order.to_dict()}")
             proto_order =ProtoOrder()
             proto_order.id = order.id
             proto_order.customer_id = order.customer_id
@@ -21,7 +21,7 @@ class ProtoOrderSerializer:
             )
 
             serialized_order = order_message.SerializeToString()
-            logging.debug("Order serialized successfully.")
+            logging.debug("[ProtoOrderSerializer.serialize_order] Order serialized successfully.")
             return serialized_order
         except Exception as e:
             logging.error(f"Error serializing order: {e}")
