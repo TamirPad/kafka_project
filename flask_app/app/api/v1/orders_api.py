@@ -8,14 +8,14 @@ from app.models.order import Order
 from app.config import Config
 from app.services.order_service import OrderService
 from app.utils.kafka.kafkaClient import KafkaClient
-from app.utils.sql.db import db
+from app.utils.sql.db import mysql_client
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 orders_bp = Blueprint('orders', __name__)
 
 kafka_client = KafkaClient(Config.KAFKA_BOOTSTRAP_SERVERS)
-order_dao = OrderDao(db)
+order_dao = OrderDao(mysql_client)
 order_service = OrderService(kafka_client, order_dao)
 
 

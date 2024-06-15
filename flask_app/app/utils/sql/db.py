@@ -19,7 +19,7 @@ def init_db():
         'pool_size': 10  
     }
     logging.info(f"****attempting to connect to mysql with :{db_config}")
-    db = MySQLClient(**db_config)
+    mysql_client = MySQLClient(**db_config)
 
     try:        
         # Recreate the 'orders' table 
@@ -33,11 +33,11 @@ def init_db():
                     );
                 """
   
-        db.execute(schema)
+        mysql_client.execute(schema)
     except Exception as e:
         logging.error("[db.init_db] Error occurred while initializing database schema")
     logging.info(" MySQL db Initialized successfully.")
 
-    return db
+    return mysql_client
 
-db = init_db()
+mysql_client = init_db()
