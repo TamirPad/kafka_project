@@ -12,11 +12,11 @@ class OrderDao:
     Data Access Object for managing orders in the database.
 
     Attributes:
-        db (MySQLClient): An instance of MySQLClient for database operations.
+        mysql_client (MySQLClient): An instance of MySQLClient for database operations.
     """
 
-    def __init__(self, db: MySQLClient) -> None:
-        self.db = db
+    def __init__(self, mysql_client: MySQLClient) -> None:
+        self.mysql_client = mysql_client
 
 
     def create_order(self, order: Order) -> None:
@@ -35,7 +35,7 @@ class OrderDao:
             """
         params = (order.id, order.customer_id, order.product_ids, order.created_date, order.updated_date)
         try:
-            self.db.execute(query, params)
+            self.mysql_client.execute(query, params)
             logging.info("[OrderDao.create_order] Order added successfully")
             return Order(order.id, order.customer_id, order.product_ids, order.created_date, order.updated_date)
         except Exception as e:
@@ -59,7 +59,7 @@ class OrderDao:
         logging.info(f"[OrderDao.get_order] Getting order id: {order_id}")
         query = f"SELECT * FROM orders WHERE id = '{order_id}'"
         try:
-            result = self.db.execute(query)
+            result = self.mysql_client.execute(query)
             if result:
                 row = result[0]
                 return Order(row['id'], row['customerID'], row['product_ids'], row['created_date'], row['updated_date'])
@@ -88,7 +88,7 @@ class OrderDao:
         params = (order.customer_id, order.product_ids, order.updated_date, order.id)
         try:
             logging.info(f"[OrderDao.update_order] Updating order with ID: {order.id}")
-            affected_rows = self.db.execute(query, params)
+            affected_rows = self.mysql_client.execute(query, params)
             if affected_rows > 0:
                 logging.info(f"[OrderDao.update_order] Order {order.id} updated successfully, Number of rows affected: {affected_rows}")
                 return affected_rows
@@ -115,7 +115,7 @@ class OrderDao:
         """
         query = "DELETE FROM orders WHERE id = %s"
         try:
-            affected_rows = self.db.execute(query, (order.id,))
+            affected_rows = self.mysql_client.execute(query, (order.id,))
             if affected_rows > 0:
                 logging.info(f"[OrderDao.delete_order] Order {order.id} deleted successfully, Number of rows affected: {affected_rows}")
                 return affected_rows
@@ -139,7 +139,7 @@ class OrderDao:
         """
         query = "SELECT * FROM orders"
         try:
-            result = self.db.execute(query)
+            result = self.mysql_client.execute(query)
             return [Order(row['id'], row['customerID'], row['product_ids'], row['created_date'], row['updated_date']) for row in result]
         except Exception as e:
             logging.error(f"[orders_dao.get_all_orders] Error occurred while retrieving all orders: {e}")
