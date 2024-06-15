@@ -53,8 +53,7 @@ def app(mariaDb, kafka:KafkaContainer):
 
     os.environ['KAFKA_BOOTSTRAP_SERVERS'] = kafka.get_bootstrap_server()
     os.environ['KAFKA_TOPIC'] = 'orders'
-    logging.info("**** im here in app fixture.")
-    # components = extract_mysql_components(mysql.get_connection_url())
+
     os.environ['MYSQL_HOST'] = mariaDb['host']
     os.environ['MYSQL_USER'] = mariaDb['user']
     os.environ['MYSQL_PASSWORD'] = mariaDb['password']
