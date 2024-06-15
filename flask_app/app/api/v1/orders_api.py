@@ -18,7 +18,6 @@ orders_bp = Blueprint('orders', __name__)
 
 kafka_client = KafkaClient(Config.KAFKA_BOOTSTRAP_SERVERS)
 order_dao = OrderDao(db)
-
 order_service = OrderService(kafka_client, order_dao)
 
 @orders_bp.errorhandler(Exception)
@@ -45,7 +44,6 @@ def index() -> str:
         str: Rendered HTML template.
     """
     try:
-        
         orders = order_dao.get_all_orders()
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
@@ -71,7 +69,7 @@ def create_order() -> Tuple[dict, int]:
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
 
-    return jsonify({"message": "Order created", "order_id": new_order.id}), 201
+    return jsonify({"message": "Order created", "order": new_order.to_dict()}), 201
 
 
 @orders_bp.route('/api/v1/order/<string:id>', methods=['GET'])
@@ -94,9 +92,9 @@ def get_order(id: str) -> Tuple[Optional[dict], int]:
         return jsonify({"error": "Internal Server Error"}), 500
 
     if order:
-        return  jsonify(order.to_dict()), 200
-
-    return jsonify({"message": "Order not found"}), 404
+        return  jsonify({"order": order.to_dict()}), 200
+    else:
+        return jsonify({"message": "Order not found"}), 404
 
 
 @orders_bp.route('/api/v1/order/<string:id>', methods=['PUT'])
@@ -116,16 +114,16 @@ def update_order(id: str) -> Tuple[dict, int]:
         return jsonify({"error": "Missing required fields: customer_id, product_ids"}), 400
 
     try:
-        current_order = order_dao.get_order(id)
-        if current_order == None:
+        updated_order = Order(id, payload.get('customer_id'), payload.get('product_ids'), 'created_time', datetime.now() )
+        updated = order_service.update_order(updated_order)
+        if not updated:
             return jsonify({"message": "Order not found"}), 404
         else:
-            updated_order = Order(id, payload.get('customer_id'), payload.get('product_ids'), current_order.created_date, datetime.now() )
-            order_service.update_order(updated_order)
+            return jsonify({"message": "Order updated", "order_id": id}), 200
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
 
-    return jsonify({"message": "Order updated", "order_id": id}), 200
+
 
 
 @orders_bp.route('/api/v1/order/<string:id>', methods=['DELETE'])
@@ -143,12 +141,12 @@ def delete_order(id: str) -> Tuple[dict, int]:
         return jsonify({"error": "Invalid order ID format"}), 400
 
     try:
-        order_to_delete = order_dao.get_order(id)
-        if order_to_delete == None:
+        deleted = order_service.delete_order(Order(id,'','','',''))
+        if not deleted:
             return jsonify({"message": "Order not found"}), 404
         else:
-            order_service.delete_order(order_to_delete)
+            return jsonify({"message": "Order deleted", "order_id": id}), 200
+
     except Exception:
         return jsonify({"error": "Internal Server Error"}), 500
 
-    return jsonify({"message": "Order deleted", "order_id": id}), 200

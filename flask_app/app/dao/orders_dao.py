@@ -36,10 +36,10 @@ class OrderDao:
         params = (order.id, order.customer_id, order.product_ids, order.created_date, order.updated_date)
         try:
             self.db.execute(query, params)
-            logging.info("Order added successfully")
+            logging.info("[OrderDao.create_order] Order added successfully")
             return Order(order.id, order.customer_id, order.product_ids, order.created_date, order.updated_date)
         except Exception as e:
-            logging.error(f"[orders_dao.create] Error occurred while adding order: {e}")
+            logging.error(f"[OrderDao.create_order] Error occurred while adding order: {e}")
             raise Exception
 
 
@@ -56,7 +56,7 @@ class OrderDao:
         Raises:
             Exception: If an error occurs during the database operation.
         """
-        logging.info(f"Getting order id: {order_id}")
+        logging.info(f"[OrderDao.get_order] Getting order id: {order_id}")
         query = f"SELECT * FROM orders WHERE id = '{order_id}'"
         try:
             result = self.db.execute(query)
@@ -64,7 +64,7 @@ class OrderDao:
                 row = result[0]
                 return Order(row['id'], row['customerID'], row['product_ids'], row['created_date'], row['updated_date'])
             else:
-                logging.info(f"Order {order_id} wasn't found")
+                logging.info(f"[OrderDao.get_order] Order {order_id} wasn't found")
                 return None
         except Exception as e:
             logging.error(f"[orders_dao.get_order] Error occurred while retrieving order: {e}")
@@ -87,9 +87,14 @@ class OrderDao:
         query = "UPDATE orders SET customerID = %s, product_ids = %s, updated_date = %s WHERE id = %s"
         params = (order.customer_id, order.product_ids, order.updated_date, order.id)
         try:
-            self.db.execute(query, params)
-            logging.info(f"Order {order.id} updated successfully")
-            return self.get_order(order_id=order.id)
+            logging.info(f"[OrderDao.update_order] Updating order with ID: {order.id}")
+            affected_rows = self.db.execute(query, params)
+            if affected_rows > 0:
+                logging.info(f"[OrderDao.update_order] Order {order.id} updated successfully, Number of rows affected: {affected_rows}")
+                return affected_rows
+            else:
+                logging.info(f"[OrderDao.update_order] Order {order.id} wasn't updated, Number of rows affected: {affected_rows}")
+                return affected_rows
         except Exception as e:
             logging.error(f"[orders_dao.update_order] Error occurred while updating order: {e}")
             raise Exception
@@ -110,9 +115,13 @@ class OrderDao:
         """
         query = "DELETE FROM orders WHERE id = %s"
         try:
-            self.db.execute(query, (order.id,))
-            logging.info(f"Order {order.id} deleted successfully")
-            return order
+            affected_rows = self.db.execute(query, (order.id,))
+            if affected_rows > 0:
+                logging.info(f"[OrderDao.delete_order] Order {order.id} deleted successfully, Number of rows affected: {affected_rows}")
+                return affected_rows
+            else:
+                logging.info(f"[OrderDao.delete_order] Order {order.id} wasn't deleted, Number of rows affected: {affected_rows}")
+                return affected_rows
         except Exception as e:
             logging.error(f"Error occurred while deleting order: {e}")
             raise Exception
