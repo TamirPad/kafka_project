@@ -73,10 +73,10 @@ class MySQLClient:
         """
         connection = self.get_connection()
         if connection is None:
-            logging.error("[MySQLClient.execute_query] Error occurred: Could not get connection from pool.")
+            logging.error("[MySQLClient.execute] Error occurred: Could not get connection from pool.")
             raise Exception
 
-        logging.debug(f"Executing Query: \n{query}")
+        logging.debug(f"[MySQLClient.execute] Executing Query: \n{query}")
 
         try:
             cursor = connection.cursor(buffered=True, dictionary=True)
@@ -87,11 +87,12 @@ class MySQLClient:
             connection.commit()
             if cursor.with_rows:
                 result: List[Dict[str, Any]] = cursor.fetchall()
-                logging.info("Query executed successfully")
+                logging.info("[MySQLClient.execute]Query executed successfully")
                 return result
             else:
-                logging.info("Query executed successfully, no rows returned")
-                return None
+                affected_rows = cursor.rowcount
+                logging.info(f"[MySQLClient.execute]Query executed successfully, Number of rows affected: {affected_rows}")
+                return affected_rows
         except Error as e:
             logging.error(f"[MySQLClient.execute_query] Error occurred: {e}")
             return None
