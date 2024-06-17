@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 from typing import Tuple, Optional
 import uuid
+from app.api.v1.input_validator import InputValidator
 from flask import render_template, Blueprint, jsonify, request, Response
 from app.dao.orders_dao import OrderDao
 from app.models.order import Order
@@ -60,10 +61,10 @@ def create_order() -> Response:
         Response: A JSON response with a success message and the HTTP status code 201 or an error message and the appropriate status code.
     """
     payload = request.get_json()
+    is_valid, errors = InputValidator.validate_create_order_input(payload)
 
-    if not payload or 'customer_id' not in payload or 'product_ids' not in payload:
-        # return jsonify({"error": "Missing required fields: customer_id, product_ids"}), 400
-        return Response(response=json.dumps({"data": {"error": "Missing required fields: customer_id, product_ids"}}),
+    if not is_valid:
+        return Response(response=json.dumps({"data": {"error": "Invalid input", "errors": errors}}),
                         status=400, mimetype='application/json')
 
     try:
@@ -89,9 +90,10 @@ def get_order(id: str) -> Response:
     Returns:
         Response: A JSON response with the order details and the HTTP status code 200 or an error message and the appropriate status code.
     """
-    if not id:
-        return Response(response=json.dumps({"data": {"error": "Invalid order ID format"}}), status=400,
-                        mimetype='application/json')
+    is_valid, errors = InputValidator.validate_order_id(id)
+    if not is_valid:
+        return Response(response=json.dumps({"data": {"error": "Invalid input", "errors": errors}}),
+                        status=400, mimetype='application/json')
 
     try:
         order = order_dao.get_order(id)
@@ -119,9 +121,10 @@ def update_order(id: str) -> Response:
        Response: A JSON response with a success message and the HTTP status code 200 or an error message and the appropriate status code.
     """
     payload = request.get_json()
+    is_valid, errors = InputValidator.validate_update_order_input(payload)
 
-    if not payload or 'customer_id' not in payload or 'product_ids' not in payload:
-        return Response(response=json.dumps({"data": {"error": "Missing required fields: customer_id, product_ids"}}),
+    if not is_valid:
+        return Response(response=json.dumps({"data": {"error": "Invalid input", "errors": errors}}),
                         status=400, mimetype='application/json')
 
     try:
@@ -153,12 +156,13 @@ def delete_order(id: str) -> Response:
     Returns:
         Response: A JSON response with a success message and the HTTP status code 200 or an error message and the appropriate status code.
     """
-    if not id:
-        return Response(response=json.dumps({"data": {"error": "Invalid order ID format"}}), status=400,
-                        mimetype='application/json')
+    is_valid, errors = InputValidator.validate_order_id(id)
+    if not is_valid:
+        return Response(response=json.dumps({"data": {"error": "Invalid input", "errors": errors}}),
+                        status=400, mimetype='application/json')
 
     try:
-        deleted = order_service.delete_order(Order(id, '', '', '', ''))
+        deleted = order_service.delete_order(Order(id, None, None, None, None))
         if not deleted:
             return Response(response=json.dumps({"data": {"message": "Order not found"}}), status=404,
                             mimetype='application/json')
