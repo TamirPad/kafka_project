@@ -81,7 +81,3 @@ def app(mariaDb, kafka: KafkaContainer):
 @pytest.fixture(scope="session", autouse=True)
 def client(app):
     return app.test_client()
-
-class KafkaTestKey():
-    def __init__(self):
-        self.messages = List()
