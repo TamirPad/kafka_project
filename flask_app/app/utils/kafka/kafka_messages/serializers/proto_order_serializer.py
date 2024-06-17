@@ -1,6 +1,6 @@
 import logging
-from app.models.order import Order
-from app.utils.kafka.kafka_messages.serializers.generated_protobuf.order_event_pb2 import ProtoOrder, OperationType, OrderMessage
+from flask_app.app.models.order import Order
+from flask_app.app.utils.kafka.kafka_messages.serializers.generated_protobuf.order_event_pb2 import ProtoOrder, OperationType, OrderMessage
 
 class ProtoOrderSerializer:
     

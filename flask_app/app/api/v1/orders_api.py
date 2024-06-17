@@ -3,14 +3,14 @@ import logging
 from datetime import datetime
 from typing import Tuple, Optional
 import uuid
-from app.api.v1.input_validator import InputValidator
+from flask_app.app.api.v1.input_validator import InputValidator
 from flask import render_template, Blueprint, jsonify, request, Response
-from app.dao.orders_dao import OrderDao
-from app.models.order import Order
-from app.config import Config
-from app.services.order_service import OrderService
-from app.utils.kafka.kafkaClient import KafkaClient
-from app.utils.sql.db import mysql_client
+from flask_app.app.dao.orders_dao import OrderDao
+from flask_app.app.models.order import Order
+from flask_app.app.config import Config
+from flask_app.app.services.order_service import OrderService
+from flask_app.app.utils.kafka.kafkaClient import KafkaClient
+from flask_app.app.utils.sql.db import mysql_client
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 

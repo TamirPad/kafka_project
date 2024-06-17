@@ -1,5 +1,5 @@
-from app.utils.sql.MySQLClient import MySQLClient
-from app.config import Config
+from flask_app.app.utils.sql.MySQLClient import MySQLClient
+from flask_app.app.config import Config
 import logging
 
 def init_db():

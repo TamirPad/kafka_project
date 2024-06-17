@@ -1,9 +1,9 @@
-from app.utils.kafka.kafkaClient import KafkaClient
-from app.dao.orders_dao import OrderDao
-from app.models.order import Order
-from app.utils.kafka.kafka_messages.serializers.proto_order_serializer import ProtoOrderSerializer
-from app.utils.kafka.kafka_messages.serializers.generated_protobuf.order_event_pb2 import OperationType  
-from app.config import Config
+from flask_app.app.utils.kafka.kafkaClient import KafkaClient
+from flask_app.app.dao.orders_dao import OrderDao
+from flask_app.app.models.order import Order
+from flask_app.app.utils.kafka.kafka_messages.serializers.proto_order_serializer import ProtoOrderSerializer
+from flask_app.app.utils.kafka.kafka_messages.serializers.generated_protobuf.order_event_pb2 import OperationType
+from flask_app.app.config import Config
 import logging
 
 

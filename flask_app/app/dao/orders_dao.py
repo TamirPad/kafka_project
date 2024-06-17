@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Union
-from app.utils.sql.MySQLClient import MySQLClient
+from flask_app.app.utils.sql.MySQLClient import MySQLClient
 import logging
-from app.models.order import Order
+from flask_app.app.models.order import Order
 
 
 
