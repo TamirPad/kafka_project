@@ -8,6 +8,7 @@ from testcontainers.core.container import DockerContainer
 import testcontainers.core.waiting_utils as waiting_utils
 from confluent_kafka import Consumer, KafkaError
 
+
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -45,24 +46,31 @@ def kafka() -> KafkaContainer:
         yield kafka
 
 
-@pytest.fixture(scope='module')
-def kafka_consumer(kafka: KafkaContainer):
+@pytest.fixture(scope='session', autouse=True)
+def kafka_consumer(kafka: KafkaContainer) -> Consumer:
+
     consumer = Consumer({
         'bootstrap.servers': kafka.get_bootstrap_server(),
         'group.id': 'test_group',
         'auto.offset.reset': 'earliest'
     })
-    consumer.subscribe(['orders'])
-
     yield consumer
     consumer.close()
 
 
+@pytest.fixture(scope='session', autouse=True)
+def kafka_message_holder(kafka_consumer: Consumer):
+    from flask_app.app.utils.kafka.kafka_message_holder import KafkaMessageHolder
+
+    kafka_consumer.subscribe(['orders'])
+    kafka_message_holder = KafkaMessageHolder(kafka_consumer)
+    kafka_message_holder.start_consuming()
+    yield kafka_message_holder
+    kafka_message_holder.stop_consuming()
+
+
 @pytest.fixture(scope="session", autouse=True)
 def app(mariaDb, kafka: KafkaContainer):
-    logging.info("* connection obj")
-
-    logging.info(mariaDb)
     logging.info("db exposed port: " + mariaDb['port'])
 
     os.environ['KAFKA_BOOTSTRAP_SERVERS'] = kafka.get_bootstrap_server()
@@ -73,7 +81,8 @@ def app(mariaDb, kafka: KafkaContainer):
     os.environ['MYSQL_PASSWORD'] = mariaDb['password']
     os.environ['MYSQL_DB'] = mariaDb['database']
     os.environ['MYSQL_PORT'] = str(mariaDb['port'])
-    from app import create_app
+
+    from flask_app.app import create_app
     app = create_app()
     yield app
 
