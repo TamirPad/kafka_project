@@ -162,13 +162,13 @@ def delete_order(id: str) -> Response:
                         status=400, mimetype='application/json')
 
     try:
-        deleted = order_service.delete_order(Order(id, None, None, None, None))
+        deleted = order_service.delete_order(Order(id, '', '', '', ''))
         if not deleted:
             return Response(response=json.dumps({"data": {"message": "Order not found"}}), status=404,
                             mimetype='application/json')
         else:
-            return Response(response=json.dumps({"data": {"message": "Order deleted", "order": deleted.to_dict()}}),
-                            status=200, mimetype='application/json')
+            return Response(response=json.dumps({"data": {"message": "Order deleted", "order": id}}),
+                            status=204, mimetype='application/json')
 
     except Exception:
         return Response(response=json.dumps({"data": {"error": "Internal Server Error"}}), status=500,
