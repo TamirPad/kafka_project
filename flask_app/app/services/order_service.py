@@ -48,6 +48,7 @@ class OrderService:
                 serialized_order = ProtoOrderSerializer.serialize_order(order, OperationType.ORDER_DELETED)
                 self.kafka_client.produce_message(self.kafka_topic, serialized_order)
                 logging.info(f"[OrderService.delete_order] Order deleted and Kafka message produced for order ID: {order.id}")
+                return True
         except Exception as e:
             logging.error(f"[OrderService.delete_order] Failed to delete order: {e}")
 
