@@ -50,3 +50,16 @@ class KafkaMessageHolder:
 
     def get_messages(self) -> List:
         return self.messages
+
+    def get_created_order_messages(self):
+        created_order_messages = [msg for msg in self.messages if msg.order_created]
+        return created_order_messages
+
+    def get_updated_order_messages(self):
+        updated_order_messages = [msg for msg in self.messages if hasattr(msg, 'order_updated')]
+        return updated_order_messages
+
+    def get_deleted_order_messages(self):
+        deleted_order_messages = [msg for msg in self.messages if msg.order_deleted]
+        return deleted_order_messages
+
