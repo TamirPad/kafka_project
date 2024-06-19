@@ -23,6 +23,7 @@ class OrderService:
             logging.info(f"[OrderService.create_order] Order created and Kafka message produced for order ID: {order.id}")
         except Exception as e:
             logging.error(f"[OrderService.create_order] Failed to create order: {e}")
+            raise
 
     def update_order(self, order: Order) -> bool:
         try:
@@ -37,6 +38,7 @@ class OrderService:
                 return True
         except Exception as e:
             logging.error(f"[OrderService.update_order] Failed to update order: {e}")
+            raise
 
     def delete_order(self, order: Order) -> bool:
         try:
@@ -51,4 +53,5 @@ class OrderService:
                 return True
         except Exception as e:
             logging.error(f"[OrderService.delete_order] Failed to delete order: {e}")
+            raise 
 

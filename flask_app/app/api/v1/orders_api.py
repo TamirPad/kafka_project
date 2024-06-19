@@ -64,6 +64,7 @@ def create_order() -> Response:
     is_valid, errors = InputValidator.validate_create_order_input(payload)
 
     if not is_valid:
+        logging.debug(f"Invalid input, Errors: {errors}")
         return Response(response=json.dumps({"data": {"error": "Invalid input", "errors": errors}}),
                         status=400, mimetype='application/json')
 
@@ -124,6 +125,7 @@ def update_order(id: str) -> Response:
     is_valid, errors = InputValidator.validate_update_order_input(payload)
 
     if not is_valid:
+        logging.debug(f"Invalid input, Errors: {errors}")
         return Response(response=json.dumps({"data": {"error": "Invalid input", "errors": errors}}),
                         status=400, mimetype='application/json')
 
