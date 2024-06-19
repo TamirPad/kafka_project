@@ -3,13 +3,12 @@ import threading
 from typing import Dict, List, Any
 from confluent_kafka import KafkaError, Consumer, Message
 from flask_app.app.utils.kafka.kafka_messages.serializers.proto_order_serializer import ProtoOrderSerializer
-from flask_app.app.utils.kafka.kafka_messages.serializers.generated_protobuf.order_event_pb2 import Order, OperationType, OrderMessage
 
 
 class KafkaMessageHolder:
     def __init__(self, kafka_consumer: Consumer) -> None:
         self.consumer: Consumer = kafka_consumer
-        self.messages: Dict[str, List[Any]] = {}
+        self.messages: List = []
         self.lock: threading.Lock = threading.Lock()
         self._running: bool = True
 
@@ -25,9 +24,8 @@ class KafkaMessageHolder:
         logging.info(f'[KafkaMessageHolder] Received message: {order_message}')
 
         with self.lock:
-            if order_message.order.id not in self.messages:
-                self.messages[order_message.order.id] = []
-            self.messages[order_message.order.id].append(order_message)
+            if order_message not in self.messages:
+                self.messages.append(order_message)
 
     def poll_message(self) -> None:
         msg: Message = self.consumer.poll(1.0)
@@ -50,6 +48,5 @@ class KafkaMessageHolder:
         self._running = False
         self.consumer_thread.join()
 
-    def get_messages_by_order_id(self, order_id: str) -> List[Any]:
-        with self.lock:
-            return self.messages.get(order_id, [])
+    def get_messages(self) -> List:
+        return self.messages

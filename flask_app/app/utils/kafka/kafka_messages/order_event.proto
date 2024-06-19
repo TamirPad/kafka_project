@@ -2,13 +2,6 @@ syntax = "proto3";
 
 package order;
 
-// Define the enum for order operations
-enum OperationType {
-    ORDER_CREATED = 0;
-    ORDER_UPDATED = 1;
-    ORDER_DELETED = 2;
-}
-
 // Define the Order message
 message Order {
     string id = 1;
@@ -18,11 +11,24 @@ message Order {
     string updated_date = 5;
 }
 
+// Define the messages for different order operations
+message OrderCreated {
+    Order order = 1;
+}
+
+message OrderUpdated {
+    Order order = 1;
+}
+
+message OrderDeleted {
+    string order_id = 1;
+}
+
 // Define the OrderMessage wrapper
 message OrderMessage {
-    OperationType operation_type = 1;
     oneof operation_details {
-        Order order = 2;
-        string order_id = 3;
+        OrderCreated order_created = 1;
+        OrderUpdated order_updated = 2;
+        OrderDeleted order_deleted = 3;
     }
 }
