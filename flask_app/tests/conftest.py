@@ -3,11 +3,12 @@ import os
 import time
 
 import pytest
+from flask import Flask
+from flask.testing import FlaskClient
 from testcontainers.kafka import KafkaContainer
 from testcontainers.core.container import DockerContainer
 import testcontainers.core.waiting_utils as waiting_utils
 from confluent_kafka import Consumer, KafkaError
-
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -48,7 +49,6 @@ def kafka() -> KafkaContainer:
 
 @pytest.fixture(scope='session', autouse=True)
 def kafka_consumer(kafka: KafkaContainer) -> Consumer:
-
     consumer = Consumer({
         'bootstrap.servers': kafka.get_bootstrap_server(),
         'group.id': 'test_group',
@@ -88,5 +88,12 @@ def app(mariaDb, kafka: KafkaContainer):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def client(app):
+def client(app: Flask) -> FlaskClient:
     return app.test_client()
+
+
+@pytest.fixture(scope='session', autouse=True)
+def app_client(client: FlaskClient):
+    from flask_app.tests.integration.utils import AppClient
+    app_client = AppClient(client)
+    return app_client
