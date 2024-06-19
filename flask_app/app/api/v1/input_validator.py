@@ -10,8 +10,8 @@ class InputValidator:
             errors["customer_id"] = "Customer ID is required."
         if 'product_ids' not in payload:
             errors["product_ids"] = "Product IDs are required."
-        elif not isinstance(payload['product_ids'], str):
-            errors["product_ids"] = "Product IDs should be a string."
+        elif not isinstance(payload['product_ids'], list):
+            errors["product_ids"] = "Product IDs should be a list."
 
         if errors:
             return False, errors
@@ -24,8 +24,8 @@ class InputValidator:
             errors["payload"] = "Payload is required."
         if 'customer_id' in payload and not isinstance(payload['customer_id'], str):
             errors["customer_id"] = "Customer ID must be a string."
-        if 'product_ids' in payload and not isinstance(payload['product_ids'], str):
-            errors["product_ids"] = "Product IDs should be a string."
+        if 'product_ids' in payload and not isinstance(payload['product_ids'], list):
+            errors["product_ids"] = "Product IDs should be a list."
 
         if errors:
             return False, errors

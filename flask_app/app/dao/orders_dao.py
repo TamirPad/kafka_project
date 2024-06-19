@@ -1,3 +1,4 @@
+import json
 import uuid
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Union
@@ -33,7 +34,7 @@ class OrderDao:
                 INSERT INTO orders (id, customerID, product_ids, created_date, updated_date) 
                 VALUES (%s, %s, %s, %s, %s)
             """
-        params = (order.id, order.customer_id, order.product_ids, order.created_date, order.updated_date)
+        params = (order.id, order.customer_id, json.dumps(order.product_ids), order.created_date, order.updated_date)
         try:
             self.mysql_client.execute(query, params)
             logging.info("[OrderDao.create_order] Order added successfully")
@@ -85,7 +86,7 @@ class OrderDao:
             Exception: If an error occurs during the database operation.
         """
         query = "UPDATE orders SET customerID = %s, product_ids = %s, updated_date = %s WHERE id = %s"
-        params = (order.customer_id, order.product_ids, order.updated_date, order.id)
+        params = (order.customer_id, json.dumps(order.product_ids), order.updated_date, order.id)
         try:
             logging.info(f"[OrderDao.update_order] Updating order with ID: {order.id}")
             affected_rows = self.mysql_client.execute(query, params)

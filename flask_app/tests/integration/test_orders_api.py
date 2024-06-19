@@ -1,3 +1,4 @@
+import json
 import logging
 import uuid
 
@@ -50,9 +51,14 @@ def delete_order(client, order_id):
 
 
 def generate_order_payload(customer_id=None, product_ids=None):
+    if product_ids is None:
+        product_ids = [f"product_{uuid.uuid4()}"]
+    elif not isinstance(product_ids, list):
+        product_ids = [product_ids]
+
     return {
         "customer_id": customer_id or f"customer_{uuid.uuid4()}",
-        "product_ids": product_ids or f"product_{uuid.uuid4()}"
+        "product_ids": product_ids
     }
 
 
@@ -64,7 +70,7 @@ def test_create_order(client, kafka_message_holder):
 
     assert retrieved_order['id'] == created_order['id'], "Retrieved order ID does not match created order ID"
     assert retrieved_order['customer_id'] == created_order['customer_id'], "Customer IDs do not match"
-    assert retrieved_order['product_ids'] == created_order['product_ids'], "Product IDs do not match"
+    assert json.loads(retrieved_order['product_ids']) == created_order['product_ids'], "Product IDs do not match"
 
     validate_kafka_message(kafka_message_holder, "ORDER_CREATED", retrieve_order(client, created_order['id']))
 
@@ -81,7 +87,7 @@ def test_update_order(client, kafka_message_holder):
 
     assert retrieved_order['id'] == updated_order['id'], "Retrieved order ID does not match updated order ID"
     assert retrieved_order['customer_id'] == updated_order['customer_id'], "Customer IDs do not match"
-    assert retrieved_order['product_ids'] == updated_order['product_ids'], "Product IDs do not match"
+    assert json.loads(retrieved_order['product_ids']) == updated_order['product_ids'], "Product IDs do not match"
 
     validate_kafka_message(kafka_message_holder, "ORDER_UPDATED", retrieve_order(client, updated_order['id']))
 
@@ -97,10 +103,9 @@ def test_create_and_update_order_twice(client, kafka_message_holder):
 
     # Validate first update
     first_retrieved_order = retrieve_order(client, first_updated_order['id'])
-    assert first_retrieved_order['id'] == first_updated_order[
-        'id'], "First retrieved order ID does not match updated order ID"
+    assert first_retrieved_order['id'] == first_updated_order['id'], "First retrieved order ID does not match updated order ID"
     assert first_retrieved_order['customer_id'] == first_updated_order['customer_id'], "First customer IDs do not match"
-    assert first_retrieved_order['product_ids'] == first_updated_order['product_ids'], "First product IDs do not match"
+    assert json.loads(first_retrieved_order['product_ids']) == first_updated_order['product_ids'], "First product IDs do not match"
 
     # Second update
     second_update_payload = generate_order_payload(customer_id=created_order['customer_id'])
@@ -108,12 +113,9 @@ def test_create_and_update_order_twice(client, kafka_message_holder):
 
     # Validate second update
     second_retrieved_order = retrieve_order(client, second_updated_order['id'])
-    assert second_retrieved_order['id'] == second_updated_order[
-        'id'], "Second retrieved order ID does not match updated order ID"
-    assert second_retrieved_order['customer_id'] == second_updated_order[
-        'customer_id'], "Second customer IDs do not match"
-    assert second_retrieved_order['product_ids'] == second_updated_order[
-        'product_ids'], "Second product IDs do not match"
+    assert second_retrieved_order['id'] == second_updated_order['id'], "Second retrieved order ID does not match updated order ID"
+    assert second_retrieved_order['customer_id'] == second_updated_order['customer_id'], "Second customer IDs do not match"
+    assert json.loads(second_retrieved_order['product_ids']) == second_updated_order['product_ids'], "Second product IDs do not match"
 
     # Validate Kafka message for the second update
     validate_kafka_message(kafka_message_holder, "ORDER_UPDATED", retrieve_order(client, second_updated_order['id']))

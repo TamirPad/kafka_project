@@ -27,7 +27,7 @@ def init_db():
                     CREATE TABLE IF NOT EXISTS orders (
                         id VARCHAR(255) PRIMARY KEY, 
                         customerID VARCHAR(255),
-                        product_ids VARCHAR(255),
+                        product_ids JSON,
                         created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                     );

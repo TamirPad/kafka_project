@@ -12,7 +12,7 @@ class Order():
         updated_date (str): The date and time when the order was last updated.
     """
 
-    def __init__(self, id: str, customer_id: str, product_ids: str, created_date: str, updated_date: str) -> None:
+    def __init__(self, id: str, customer_id: str, product_ids: List[str], created_date: str, updated_date: str) -> None:
         self.id = id
         self.customer_id = customer_id
         self.product_ids = product_ids
