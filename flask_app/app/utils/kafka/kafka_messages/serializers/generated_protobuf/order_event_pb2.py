@@ -14,17 +14,17 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11order_event.proto\x12\x05order\"n\n\nProtoOrder\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x63ustomer_id\x18\x02 \x01(\t\x12\x13\n\x0bproduct_ids\x18\x03 \x01(\t\x12\x14\n\x0c\x63reated_date\x18\x04 \x01(\t\x12\x14\n\x0cupdated_date\x18\x05 \x01(\t\"d\n\x0cOrderMessage\x12,\n\x0eoperation_type\x18\x01 \x01(\x0e\x32\x14.order.OperationType\x12&\n\x0bproto_order\x18\x02 \x01(\x0b\x32\x11.order.ProtoOrder*H\n\rOperationType\x12\x11\n\rORDER_CREATED\x10\x00\x12\x11\n\rORDER_UPDATED\x10\x01\x12\x11\n\rORDER_DELETED\x10\x02\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11order_event.proto\x12\x05order\"i\n\x05Order\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x63ustomer_id\x18\x02 \x01(\t\x12\x13\n\x0bproduct_ids\x18\x03 \x03(\t\x12\x14\n\x0c\x63reated_date\x18\x04 \x01(\t\x12\x14\n\x0cupdated_date\x18\x05 \x01(\t\"\x84\x01\n\x0cOrderMessage\x12,\n\x0eoperation_type\x18\x01 \x01(\x0e\x32\x14.order.OperationType\x12\x1d\n\x05order\x18\x02 \x01(\x0b\x32\x0c.order.OrderH\x00\x12\x12\n\x08order_id\x18\x03 \x01(\tH\x00\x42\x13\n\x11operation_details*H\n\rOperationType\x12\x11\n\rORDER_CREATED\x10\x00\x12\x11\n\rORDER_UPDATED\x10\x01\x12\x11\n\rORDER_DELETED\x10\x02\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'order_event_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_OPERATIONTYPE']._serialized_start=242
-  _globals['_OPERATIONTYPE']._serialized_end=314
-  _globals['_PROTOORDER']._serialized_start=28
-  _globals['_PROTOORDER']._serialized_end=138
-  _globals['_ORDERMESSAGE']._serialized_start=140
-  _globals['_ORDERMESSAGE']._serialized_end=240
+  _globals['_OPERATIONTYPE']._serialized_start=270
+  _globals['_OPERATIONTYPE']._serialized_end=342
+  _globals['_ORDER']._serialized_start=28
+  _globals['_ORDER']._serialized_end=133
+  _globals['_ORDERMESSAGE']._serialized_start=136
+  _globals['_ORDERMESSAGE']._serialized_end=268
 # @@protoc_insertion_point(module_scope)

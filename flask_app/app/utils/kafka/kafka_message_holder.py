@@ -3,7 +3,7 @@ import threading
 from typing import Dict, List, Any
 from confluent_kafka import KafkaError, Consumer, Message
 from flask_app.app.utils.kafka.kafka_messages.serializers.proto_order_serializer import ProtoOrderSerializer
-from flask_app.app.utils.kafka.kafka_messages.serializers.generated_protobuf.order_event_pb2 import ProtoOrder, OperationType, OrderMessage
+from flask_app.app.utils.kafka.kafka_messages.serializers.generated_protobuf.order_event_pb2 import Order, OperationType, OrderMessage
 
 
 class KafkaMessageHolder:
@@ -25,9 +25,9 @@ class KafkaMessageHolder:
         logging.info(f'[KafkaMessageHolder] Received message: {order_message}')
 
         with self.lock:
-            if order_message.proto_order.id not in self.messages:
-                self.messages[order_message.proto_order.id] = []
-            self.messages[order_message.proto_order.id].append(order_message)
+            if order_message.order.id not in self.messages:
+                self.messages[order_message.order.id] = []
+            self.messages[order_message.order.id].append(order_message)
 
     def poll_message(self) -> None:
         msg: Message = self.consumer.poll(1.0)

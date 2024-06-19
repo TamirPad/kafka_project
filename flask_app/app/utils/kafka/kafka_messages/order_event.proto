@@ -1,6 +1,5 @@
 syntax = "proto3";
 
-
 package order;
 
 // Define the enum for order operations
@@ -11,17 +10,19 @@ enum OperationType {
 }
 
 // Define the Order message
-message ProtoOrder {
+message Order {
     string id = 1;
     string customer_id = 2;
-    string product_ids = 3;
+    repeated string product_ids = 3;
     string created_date = 4;
     string updated_date = 5;
 }
 
-
 // Define the OrderMessage wrapper
 message OrderMessage {
     OperationType operation_type = 1;
-    ProtoOrder proto_order = 2;
+    oneof operation_details {
+        Order order = 2;
+        string order_id = 3;
+    }
 }
