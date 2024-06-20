@@ -12,7 +12,7 @@ class KafkaClient:
 
     def __init__(self, bootstrap_servers: str) -> None:
         self.bootstrap_servers = bootstrap_servers
-        logging.info("KafkaClient initialized successfully")
+        logging.info(f"[KafkaClient] Attempting to connect to kafka with :{bootstrap_servers}")
 
 
 
@@ -32,8 +32,8 @@ class KafkaClient:
         try:
             producer.produce(topic, message)
             producer.flush()
-            logging.info("Message sent successfully")
+            logging.info("[KafkaClient] Message sent successfully")
         except Exception as e:
-            logging.error(f"Failed to send message: {e}")
+            logging.error(f"[KafkaClient] Failed to send message: {e}")
             raise Exception
 

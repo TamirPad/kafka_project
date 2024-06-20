@@ -1,68 +1,113 @@
+import json
 import logging
+import uuid
 
 base_url = "/api/v1/order/"
 
-def test_create_order(client):
-    # Define a payload for creating a new order
-    payload = {
-        "customer_id": "customer_123",
-        "product_ids": ["product_1"]
-    }
 
-    # Send a POST request to create a new order
-    logging.info("Sending POST request to create a new order")
-    response = client.post(base_url, json=payload)
+def test_create_order(app_client, kafka_message_holder):
+    payload = app_client.generate_order_payload()
 
-    # Validate the response
-    assert response.status_code == 201, "Failed to create order. Unexpected status code."
-    response_data = response.get_json()
-    assert response_data["message"] == "Order created", "Failed to create order. Unexpected message."
+    created_order = app_client.create_order(payload)
+    assert created_order.status_code == 201, "Unexpected status code."
+    created_order = created_order.get_json().get('data').get('order')
+
+    retrieved_order = app_client.retrieve_order(created_order['id'])
+    assert retrieved_order.status_code == 200, "Unexpected status code."
+    retrieved_order = retrieved_order.get_json().get('data').get('order')
+
+    assert retrieved_order['id'] == created_order['id'], "Retrieved order ID does not match created order ID"
+    assert retrieved_order['customer_id'] == created_order['customer_id'], "Customer IDs do not match"
+    assert json.loads(retrieved_order['product_ids']) == created_order['product_ids'], "Product IDs do not match"
+
+    created_order_messages = kafka_message_holder.get_created_order_messages()
+    for msg in created_order_messages:
+        if retrieved_order['customer_id'] == msg.order_created.order.customer_id and json.loads(retrieved_order['product_ids']) == msg.order_created.order.product_ids:
+            assert retrieved_order['id'] == msg.order_created.order.id
+            assert retrieved_order['customer_id'] == msg.order_created.order.customer_id
+            assert retrieved_order['product_ids'] == msg.order_created.order.product_ids
 
 
-def test_get_order(client):
-    # Send a GET request to retrieve an order by its ID
+def test_get_order(app_client):
+    payload = app_client.generate_order_payload()
+
+    created_order = app_client.create_order(payload)
+    assert created_order.status_code == 201, "Unexpected status code."
+    created_order = created_order.get_json().get('data').get('order')
+
+    retrieved_order = app_client.retrieve_order(created_order['id'])
+    assert retrieved_order.status_code == 200, "Unexpected status code."
+    retrieved_order = retrieved_order.get_json().get('data').get('order')
+
+    assert retrieved_order['id'] == created_order['id'], "Retrieved order ID does not match created order ID"
+    assert retrieved_order['customer_id'] == created_order['customer_id'], "Customer IDs do not match"
+    assert json.loads(retrieved_order['product_ids']) == created_order['product_ids'], "Product IDs do not match"
+
+
+def test_update_order(app_client, kafka_message_holder):
+    create_payload = app_client.generate_order_payload()
+    created_order = app_client.create_order(create_payload)
+    assert created_order.status_code == 201, "Unexpected status code."
+    created_order = created_order.get_json().get('data').get('order')
+
+    update_payload = app_client.generate_order_payload(customer_id=created_order['customer_id'])
+    updated_order = app_client.update_order(created_order['id'], update_payload)
+    assert updated_order.status_code == 200, "Unexpected status code."
+    updated_order = updated_order.get_json().get('data').get('order')
+
+    retrieved_order = app_client.retrieve_order(updated_order['id'])
+    assert retrieved_order.status_code == 200, "Unexpected status code."
+    retrieved_order = retrieved_order.get_json().get('data').get('order')
+
+    assert retrieved_order['id'] == updated_order['id'], "Retrieved order ID does not match updated order ID"
+    assert retrieved_order['customer_id'] == updated_order['customer_id'], "Customer IDs do not match"
+    assert json.loads(retrieved_order['product_ids']) == updated_order['product_ids'], "Product IDs do not match"
+
+    updated_order_messages = kafka_message_holder.get_updated_order_messages()
+    logging.debug("[test_orders_api] Validating kafka msg")
+    for msg in updated_order_messages:
+        if retrieved_order['customer_id'] == msg.order_updated.order.customer_id and json.loads(retrieved_order['product_ids']) == msg.order_updated.order.product_ids:
+            assert retrieved_order['id'] == msg.order_updated.order.id
+            assert retrieved_order['customer_id'] == msg.order_updated.order.customer_id
+            assert json.loads(retrieved_order['product_ids']) == msg.order_updated.order.product_ids
+
+
+def test_delete_order(app_client, kafka_message_holder):
+    # Create an order to delete
+    create_payload = app_client.generate_order_payload()
+    created_order = app_client.create_order(create_payload)
+    assert created_order.status_code == 201, "Unexpected status code."
+    created_order = created_order.get_json().get('data').get('order')
+
+    # Delete the order
+    response = app_client.delete_order(created_order['id'])
+    assert response.status_code == 204, "Unexpected status code."
+
+    # Attempt to retrieve the deleted order and validate it returns 404
+    response = app_client.retrieve_order(created_order['id'])
+    assert response.status_code == 404, "Deleted order was still retrievable. Unexpected status code."
+
+    deleted_order_messages = kafka_message_holder.get_deleted_order_messages()
+    for msg in deleted_order_messages:
+        assert created_order['id'] == msg.order_deleted.order_id
+
+
+def test_get_order_order_not_found(app_client):
     order_id = "971b5ec2-b38f-4372-91f9-5d29a4854b8a"
-    logging.info("Sending GET request to retrieve order with ID: %s", order_id)
-    response = client.get(f"{base_url}{order_id}")
+    response = app_client.retrieve_order(order_id)
 
-    # Validate the response
-    assert response.status_code == 200, "Failed to retrieve order. Unexpected status code."
-    response_data = response.get_json()
-    assert response_data["id"] == order_id, "Failed to retrieve order. Unexpected order ID."
+    assert response.status_code == 404, "Failed to retrieve order. Unexpected status code."
 
-def test_update_order(client):
-    # Define a payload for updating an existing order
+
+def test_update_order_order_not_found(app_client):
     order_id = "971b5ec2-b38f-4372-91f9-5d29a4854b8a"
-    payload = {
-        "customer_id": "customer_456",
-        "product_ids": ["product_2"]
-    }
+    payload = app_client.generate_order_payload()
 
-    # Send a PUT request to update the order
-    logging.info("Sending PUT request to update order with ID: %s", order_id)
-    response = client.put(f"{base_url}{order_id}", json=payload)
+    response = app_client.update_order(order_id, payload)
+    assert response.status_code == 404, "Failed to update order. Unexpected status code."
 
-    # Validate the response
-    assert response.status_code == 200, "Failed to update order. Unexpected status code."
-    response_data = response.get_json()
-    assert response_data["message"] == "Order updated", "Failed to update order. Unexpected message."
 
-def test_delete_order(client):
-    # Define an order ID for deleting
+def test_delete_order_order_not_found(app_client):
     order_id = "894fc9e9-d316-4092-ba1d-4f4dc41e5371"
-    
-    # Send a DELETE request to delete the order
-    logging.info("Sending DELETE request to delete order with ID: %s", order_id)
-    response = client.delete(f"{base_url}{order_id}")
-    if response.status_code == 404:
-        assert response.status_code == 404, "Failed to delete order."
-
-    else:  
-        # Assert that the response status code is 204
-        assert response.status_code == 200, f"Failed to delete order. Unexpected status code.{response.status_code}"
-    
-
-
-
-
-
+    response = app_client.delete_order(order_id)
+    assert response.status_code == 404, "Failed to delete order. Unexpected status code."
