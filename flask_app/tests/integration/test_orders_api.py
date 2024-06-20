@@ -22,11 +22,10 @@ def test_create_order(app_client, kafka_message_holder):
 
     created_order_messages = kafka_message_holder.get_created_order_messages()
     for msg in created_order_messages:
-        if retrieved_order['customer_id'] == msg.order.customer_id and retrieved_order[
-            'product_ids'] == msg.order.product_ids:
-            assert retrieved_order['id'] == msg.order.id
-            assert retrieved_order['customer_id'] == msg.order.customer_id
-            assert retrieved_order['product_ids'] == msg.order.product_ids
+        if retrieved_order['customer_id'] == msg.order_created.order.customer_id and json.loads(retrieved_order['product_ids']) == msg.order_created.order.product_ids:
+            assert retrieved_order['id'] == msg.order_created.order.id
+            assert retrieved_order['customer_id'] == msg.order_created.order.customer_id
+            assert retrieved_order['product_ids'] == msg.order_created.order.product_ids
 
 
 def test_get_order(app_client):
@@ -65,12 +64,12 @@ def test_update_order(app_client, kafka_message_holder):
     assert json.loads(retrieved_order['product_ids']) == updated_order['product_ids'], "Product IDs do not match"
 
     updated_order_messages = kafka_message_holder.get_updated_order_messages()
+    logging.debug("[test_orders_api] Validating kafka msg")
     for msg in updated_order_messages:
-        if retrieved_order['customer_id'] == msg.order.customer_id and retrieved_order[
-            'product_ids'] == msg.order.product_ids:
-            assert retrieved_order['id'] == msg.order.id
-            assert retrieved_order['customer_id'] == msg.order.customer_id
-            assert retrieved_order['product_ids'] == msg.order.product_ids
+        if retrieved_order['customer_id'] == msg.order_updated.order.customer_id and json.loads(retrieved_order['product_ids']) == msg.order_updated.order.product_ids:
+            assert retrieved_order['id'] == msg.order_updated.order.id
+            assert retrieved_order['customer_id'] == msg.order_updated.order.customer_id
+            assert json.loads(retrieved_order['product_ids']) == msg.order_updated.order.product_ids
 
 
 def test_delete_order(app_client, kafka_message_holder):
@@ -90,7 +89,7 @@ def test_delete_order(app_client, kafka_message_holder):
 
     deleted_order_messages = kafka_message_holder.get_deleted_order_messages()
     for msg in deleted_order_messages:
-        assert created_order['id'] == msg.order.id
+        assert created_order['id'] == msg.order_deleted.order_id
 
 
 def test_get_order_order_not_found(app_client):
