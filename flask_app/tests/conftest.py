@@ -1,6 +1,5 @@
 import logging
 import os
-import time
 
 import pytest
 from flask import Flask
@@ -8,7 +7,7 @@ from flask.testing import FlaskClient
 from testcontainers.kafka import KafkaContainer
 from testcontainers.core.container import DockerContainer
 import testcontainers.core.waiting_utils as waiting_utils
-from confluent_kafka import Consumer, KafkaError
+from confluent_kafka import Consumer
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -60,7 +59,7 @@ def kafka_consumer(kafka: KafkaContainer) -> Consumer:
 
 @pytest.fixture(scope='session', autouse=True)
 def kafka_message_holder(kafka_consumer: Consumer):
-    from flask_app.app.utils.kafka.kafka_message_holder import KafkaMessageHolder
+    from flask_app.tests.utlis.kafka_message_holder import KafkaMessageHolder
 
     kafka_consumer.subscribe(['orders'])
     kafka_message_holder = KafkaMessageHolder(kafka_consumer)
@@ -94,6 +93,6 @@ def client(app: Flask) -> FlaskClient:
 
 @pytest.fixture(scope='session', autouse=True)
 def app_client(client: FlaskClient):
-    from flask_app.tests.integration.utils import AppClient
+    from flask_app.tests.utlis.app_client import AppClient
     app_client = AppClient(client)
     return app_client
