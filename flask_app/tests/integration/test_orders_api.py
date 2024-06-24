@@ -1,12 +1,11 @@
 import json
 import logging
-import uuid
-
+from flask_app.tests.utlis.utils import generate_order_payload
 base_url = "/api/v1/order/"
 
 
 def test_create_order(app_client, kafka_message_holder):
-    payload = app_client.generate_order_payload()
+    payload = generate_order_payload()
 
     created_order = app_client.create_order(payload)
     assert created_order.status_code == 201, "Unexpected status code."
@@ -29,7 +28,7 @@ def test_create_order(app_client, kafka_message_holder):
 
 
 def test_get_order(app_client):
-    payload = app_client.generate_order_payload()
+    payload = generate_order_payload()
 
     created_order = app_client.create_order(payload)
     assert created_order.status_code == 201, "Unexpected status code."
@@ -45,12 +44,12 @@ def test_get_order(app_client):
 
 
 def test_update_order(app_client, kafka_message_holder):
-    create_payload = app_client.generate_order_payload()
+    create_payload = generate_order_payload()
     created_order = app_client.create_order(create_payload)
     assert created_order.status_code == 201, "Unexpected status code."
     created_order = created_order.get_json().get('data').get('order')
 
-    update_payload = app_client.generate_order_payload(customer_id=created_order['customer_id'])
+    update_payload = generate_order_payload(customer_id=created_order['customer_id'])
     updated_order = app_client.update_order(created_order['id'], update_payload)
     assert updated_order.status_code == 200, "Unexpected status code."
     updated_order = updated_order.get_json().get('data').get('order')
@@ -74,7 +73,7 @@ def test_update_order(app_client, kafka_message_holder):
 
 def test_delete_order(app_client, kafka_message_holder):
     # Create an order to delete
-    create_payload = app_client.generate_order_payload()
+    create_payload = generate_order_payload()
     created_order = app_client.create_order(create_payload)
     assert created_order.status_code == 201, "Unexpected status code."
     created_order = created_order.get_json().get('data').get('order')
@@ -101,7 +100,7 @@ def test_get_order_order_not_found(app_client):
 
 def test_update_order_order_not_found(app_client):
     order_id = "971b5ec2-b38f-4372-91f9-5d29a4854b8a"
-    payload = app_client.generate_order_payload()
+    payload = generate_order_payload()
 
     response = app_client.update_order(order_id, payload)
     assert response.status_code == 404, "Failed to update order. Unexpected status code."
