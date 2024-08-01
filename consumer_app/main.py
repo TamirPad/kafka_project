@@ -1,8 +1,6 @@
 from elasticsearch import Elasticsearch
 from confluent_kafka import Consumer, KafkaError
-from deserialize.proto_order_serializer import ProtoOrderSerializer
-from deserialize.order_event_pb2 import ProtoOrder, OperationType, OrderMessage
-
+from flask_app.app.utils.kafka.kafka_messages.serializers.proto_order_serializer import ProtoOrderSerializer
 import logging
 
 
@@ -41,17 +39,38 @@ try:
 
             # Index the order into Elasticsearch
             try:
-                json_msg = {
-                    "message": str(OperationType.Name(order_message.operation_type)),
+                if msg.HasField('order_created'):
+                    json_msg = {
+                        "message": "order_created",
 
-                    "order": {
-                        "id": order_message.proto_order.id,
-                        "customer_id": order_message.proto_order.customer_id,
-                        "product_ids": order_message.proto_order.product_ids,
-                        "created_date": order_message.proto_order.created_date,
-                        "updated_date": order_message.proto_order.updated_date
+                        "order": {
+                            "id": order_message.order_created.order.id,
+                            "customer_id": order_message.order_created.order.customer_id,
+                            "product_ids": order_message.order_created.order.product_ids,
+                            "created_date": order_message.order_created.order.created_date,
+                            "updated_date": order_message.order_created.order.updated_date
+                        }
                     }
-                }
+                elif msg.HasField('order_updated'):
+                    json_msg = {
+                        "message": "order_updated",
+
+                        "order": {
+                            "id": order_message.order_updated.order.id,
+                            "customer_id": order_message.order_updated.order.customer_id,
+                            "product_ids": order_message.order_updated.order.product_ids,
+                            "created_date": order_message.order_updated.order.created_date,
+                            "updated_date": order_message.order_updated.order.updated_date
+                        }
+                    }
+                elif msg.HasField('order_deleted'):
+                    json_msg = {
+                        "message": "order_deleted",
+                        "order_id": order_message.order_deleted.order.id,
+                    }
+                else:
+                    raise ValueError
+
                 print(json_msg)
                 client.index(index="orders", body=json_msg)
             except Exception as e:
