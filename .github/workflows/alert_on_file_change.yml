@@ -1,0 +1,30 @@
+name: Run Script on File Change
+
+on:
+  push:
+    paths:
+      - flask_app/app/config.py
+  pull_request:
+    paths:
+      - flask_app/app/config.py
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python (or any other environment)
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.8'
+
+    # - name: Install dependencies (if required)
+    #   run: |
+    #     pip install -r requirements.txt
+
+    - name: Run your script
+      run: |
+        python flask_app/app/hello.py
