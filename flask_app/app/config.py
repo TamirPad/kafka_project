@@ -4,6 +4,7 @@ import logging
 
 # load_dotenv()
 
+
 class Config:
     logging.info("****trying to read env variable")
     MYSQL_HOST = os.getenv('MYSQL_HOST')
